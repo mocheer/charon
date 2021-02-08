@@ -1,9 +1,12 @@
 package router
 
 import (
+	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/compress"
@@ -16,6 +19,7 @@ import (
 	"github.com/mocheer/charon/src/router/auth"
 	"github.com/mocheer/charon/src/router/model"
 	"github.com/mocheer/charon/src/router/pipal"
+	"github.com/mocheer/charon/src/router/proxies"
 	"github.com/mocheer/charon/src/router/query"
 	"github.com/mocheer/charon/src/router/upload"
 
@@ -32,6 +36,7 @@ func useRouter(app *fiber.App) {
 	upload.Use(v1)
 	model.Use(v1)
 	auth.Use(v1)
+	proxies.Use(v1)
 }
 
 // Init 初始化路由
@@ -86,6 +91,13 @@ func Init() {
 		})
 	}
 
+	filepathNames, err := filepath.Glob(filepath.Join("./public", "*"))
+	if err == nil {
+		for i := range filepathNames {
+			fmt.Println(filepathNames[i]) //打印path
+		}
+	}
+
 	// 不支持压缩中间件，所以只能放到这个中间件前面实例化
 	//app.Use("/docs", swagger.Handler) // default
 
@@ -102,12 +114,19 @@ func Init() {
 
 	// 重定向
 	app.Get("/v/*", func(c *fiber.Ctx) error {
+		// maxAge := strconv.FormatUint(86400*30, 10)
+		// c.Set(fiber.HeaderCacheControl, "public, max-age="+maxAge)
 		return c.SendFile("./public/index.html", false)
 	})
 	// 重定向
 	protected := jwtware.New(jwtware.Config{
 		SigningKey: auth.SigningKey,
 		ErrorHandler: func(c *fiber.Ctx, err error) error {
+			cookie := new(fiber.Cookie)
+			cookie.Name = "c_url"
+			cookie.Value = string(c.Request().Header.RequestURI())
+			cookie.Expires = time.Now().Add(5 * time.Second)
+			c.Cookie(cookie)
 			return c.Redirect("/v/studio/login")
 		},
 		TokenLookup: "cookie:t",

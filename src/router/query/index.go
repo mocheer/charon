@@ -17,33 +17,34 @@ import (
 	"github.com/mocheer/charon/src/global"
 )
 
-// Use 初始化 table 路由
+// Use 初始化 query 路由
+// @see http://apijson.cn/
 func Use(api fiber.Router) {
 	router := api.Group("/query")
-	// s=>select
-	router.Get("/s/:name", store.GlobalCache, selectTable)
-	// i=>insert 需要添加认证
-	router.Post("/i/:name", auth.GlobalProtected, insertTable)
-	// u=>update 需要添加认证
-	router.Post("/u/:name", auth.GlobalProtected, updateTable)
-	// d=>delete 需要添加认证
-	router.Post("/d/:name", auth.GlobalProtected, deleteTable)
+	// select
+	router.Get("/:name", store.GlobalCache, querySeclect)
+	// insert 需要添加认证
+	router.Put("/:name", auth.GlobalProtected, auth.PermissProtectd, queryInsert)
+	// update 需要添加认证
+	router.Post("/:name", auth.GlobalProtected, auth.PermissProtectd, queryUpdate)
+	// delete 需要添加认证
+	router.Delete("/:name", auth.GlobalProtected, auth.PermissProtectd, queryDelete)
 	// raw
 	router.Get("/raw/:name", queryRaw)
 	router.Post("/raw/:name", queryRaw)
-
 }
 
 // matched, _ := regexp.MatchString(`pg_*`, nameParam)
-// selectTable
-func selectTable(c *fiber.Ctx) error {
-	var nameParam = c.Params("name")
-	var modeQuery = c.Query("mode")   // take | first | last | find(default)
-	var whereQuery = c.Query("where") // a=1 || {a:1}  => where a=1
-	var notQuery = c.Query("not")     // a=1 || {a:1}  => where not a=1
-	var selectQuery = c.Query("select")
-	var limitQuery = c.Query("limit")
-	var orderQuery = c.Query("order")
+// querySeclect
+func querySeclect(c *fiber.Ctx) error {
+	var nameParam = c.Params("name")    // 表名
+	var modeQuery = c.Query("mode")     // 数据返回模式 take | first | last | find(default)
+	var whereQuery = c.Query("where")   // 查询 a=1 || {a:1}  => where a=1
+	var notQuery = c.Query("not")       // 查询 a=1 || {a:1}  => where not a=1
+	var selectQuery = c.Query("select") // 字段
+	var limitQuery = c.Query("limit")   //
+	// var offsetQuery = c.Query("offset") // 偏移
+	var orderQuery = c.Query("order") // 排序
 	var result []map[string]interface{}
 	var query = global.Db
 	var entity = models.TableMapGenerate[nameParam]()
@@ -53,6 +54,7 @@ func selectTable(c *fiber.Ctx) error {
 	if selectQuery != "" {
 		// 不止是字段选择，还是字段重命名，且支持函数调用
 		query.Select(strings.Split(selectQuery, ","))
+
 	}
 
 	if whereQuery != "" {
@@ -88,19 +90,21 @@ func selectTable(c *fiber.Ctx) error {
 	case "first":
 		query.First(entity)
 		return res.ResultOK(c, entity)
+		// return res.ResultOK(c, nil)
 	case "last":
 		query.Last(entity)
 		return res.ResultOK(c, entity)
+	case "find":
+		query.Find(result)
+		break
 	default:
 		db.ScanIntoMap(query, &result)
 	}
 
-	//
-
 	return res.ResultOK(c, result)
 }
 
-func insertTable(c *fiber.Ctx) error {
+func queryInsert(c *fiber.Ctx) error {
 	var nameParam = c.Params("name")
 	var entity = models.TableMapGenerate[nameParam]()
 	json.Unmarshal(c.Body(), entity)
@@ -109,9 +113,10 @@ func insertTable(c *fiber.Ctx) error {
 	return res.ResultOK(c, true)
 }
 
-func updateTable(c *fiber.Ctx) error {
+func queryUpdate(c *fiber.Ctx) error {
 	var nameParam = c.Params("name")
 	var whereQuery = c.Query("where")
+
 	var body map[string]interface{}
 	var entity = models.TableMapGenerate[nameParam]()
 	var query = global.Db.Table(entity.TableName())
@@ -125,15 +130,30 @@ func updateTable(c *fiber.Ctx) error {
 			query.Where(whereQuery)
 		}
 	}
+
 	query.Updates(body)
-	return res.ResultOK(c, true)
+	return res.ResultOK(c, query.RowsAffected > 1)
 }
 
-func deleteTable(c *fiber.Ctx) error {
+// queryDelete
+func queryDelete(c *fiber.Ctx) error {
 	var nameParam = c.Params("name")
-	var body = models.TableMapGenerate[nameParam]()
-	json.Unmarshal(c.Body(), &body)
-	global.Db.Delete(&body)
+	var whereQuery = c.Query("where")
+	//
+	var entity = models.TableMapGenerate[nameParam]()
+	json.Unmarshal(c.Body(), entity)
+	var query = global.Db.Table(entity.TableName())
+	//
+	if whereQuery != "" {
+		var whereMap map[string]interface{}
+		err := json.Unmarshal([]byte(whereQuery), &whereMap)
+		if err == nil {
+			query.Where(whereMap)
+		} else {
+			query.Where(whereQuery)
+		}
+	}
+	query.Delete(entity)
 	return res.ResultOK(c, true)
 }
 

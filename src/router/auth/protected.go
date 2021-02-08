@@ -1,6 +1,7 @@
 package auth
 
 import (
+	jwt "github.com/form3tech-oss/jwt-go"
 	"github.com/gofiber/fiber/v2"
 	jwtware "github.com/gofiber/jwt/v2"
 	"github.com/mocheer/charon/src/core/res"
@@ -16,6 +17,17 @@ var GlobalProtected = jwtware.New(jwtware.Config{
 	SigningKey:   SigningKey,
 	ErrorHandler: jwtError,
 })
+
+// PermissProtectd 特殊权限认证
+func PermissProtectd(c *fiber.Ctx) error {
+	user := c.Locals("user").(*jwt.Token)
+	claims := user.Claims.(jwt.MapClaims)
+	role := claims["role"].(float64)
+	if role == 1 {
+		return c.Next()
+	}
+	return res.ResultError(c, fiber.StatusBadRequest, "没有权限", nil)
+}
 
 func jwtError(c *fiber.Ctx, err error) error {
 	if err.Error() == "Missing or malformed JWT" {

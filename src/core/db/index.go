@@ -10,7 +10,7 @@ import (
 
 // Open 连接数据库
 func Open(dsn string) *gorm.DB {
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{AllowGlobalUpdate: true})
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{AllowGlobalUpdate: false})
 	if err != nil {
 		fmt.Println("数据库连接失败")
 	}
