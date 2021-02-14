@@ -1,27 +1,30 @@
 # charon
 
-卡戎，冥王星的卫星
+卡戎，冥王星的卫星。主要用于提供地图方面的数据服务。
 
+- 提供类似GraphQL风格或者说apijson风格的服务接口
+- 提供地图服务接口
+- 提供pipal框架的服务接口
+- 提供网络爬虫、代理等服务
 
+### app.json
 ```json
 {
-  "Name": "charon", // 服务名称，将注册到注册表中支持自启动
+  "Name": "charon",
   "Version": "1.0.0",
   "DisplayName":"应用服务",
-  "Mode":"dev",// 开发模式，分成dev、production
+  "Mode":"dev",
   "Port": ":9912",
-  "Static":{ // 静态资源服务器
+  "Static":{
     "/":{
       "mode":"history",
-      "dir":"./public",
-      "baseName":"v"
+      "dir":"./public"
     },
     "/web":{
       "mode":"history",
-      "dir":"./web",
-      "baseName":"web"
+      "dir":"./web"
     }
   },
-  "DbDSN":"xxx" // 数据库连接串，支持 pg、mysql 等
+  "DbDSN":"xxx"
 }
 ```
