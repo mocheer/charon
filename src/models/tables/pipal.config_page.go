@@ -5,8 +5,8 @@ import (
 	"gorm.io/gorm"
 )
 
-// Petiole 页面配置
-type Petiole struct {
+// PageConfig 页面配置
+type PageConfig struct {
 	AppName   string         `json:"app_name" gorm:"primary_key"`
 	Name      string         `json:"name" gorm:"primary_key"`
 	Dep       string         `json:"dep"`
@@ -20,6 +20,6 @@ type Petiole struct {
 }
 
 // TableName 设置表名
-func (Petiole) TableName() string {
+func (PageConfig) TableName() string {
 	return "pipal.config_page"
 }

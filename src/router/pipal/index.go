@@ -14,33 +14,33 @@ import (
 func Use(api fiber.Router) {
 	router := api.Group("/pipal")
 	// query
-	router.Get("/app/:name", queryStipule)
-	router.Get("/page/:stipule/:name", store.GlobalCache, queryPetiole)
-	router.Get("/view/:name", store.GlobalCache, queryBlade)
+	router.Get("/app/:name", queryAppConfig)
+	router.Get("/page/:appName/:name", store.GlobalCache, queryPageConfig)
+	router.Get("/view/:name", store.GlobalCache, queryViewConfig)
 }
 
-// queryStipule
-func queryStipule(c *fiber.Ctx) error {
+// queryAppConfig
+func queryAppConfig(c *fiber.Ctx) error {
 	name := c.Params("name")
-
-	var stipule tables.Stipule
-	global.Db.Where(&tables.Stipule{Name: name}).First(&stipule)
-	return res.ResultOK(c, stipule)
+	//
+	var appConfig tables.AppConfig
+	global.Db.Where(&tables.AppConfig{Name: name}).First(&appConfig)
+	return res.ResultOK(c, appConfig)
 }
 
-// queryPetiole
-func queryPetiole(c *fiber.Ctx) error {
-	stipule := c.Params("stipule")
-	name, _ := url.QueryUnescape(c.Params("name"))
-	var petiole tables.Petiole
-	global.Db.Where(&tables.Petiole{AppName: stipule, Name: name}).First(&petiole)
+// queryPageConfig
+func queryPageConfig(c *fiber.Ctx) error {
+	var appName = c.Params("appName")
+	var name, _ = url.QueryUnescape(c.Params("name"))
+	var petiole tables.PageConfig
+	global.Db.Where(&tables.PageConfig{AppName: appName, Name: name}).First(&petiole)
 	return res.ResultOK(c, petiole)
 }
 
-// queryBlade
-func queryBlade(c *fiber.Ctx) error {
+// queryViewConfig
+func queryViewConfig(c *fiber.Ctx) error {
 	name := c.Params("name")
-	var blade tables.Blade
-	global.Db.Where(&tables.Blade{Name: name}).First(&blade)
-	return res.ResultOK(c, blade)
+	var viewConfig tables.ViewConfig
+	global.Db.Where(&tables.ViewConfig{Name: name}).First(&viewConfig)
+	return res.ResultOK(c, viewConfig)
 }

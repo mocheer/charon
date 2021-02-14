@@ -4,8 +4,8 @@ import (
 	"gorm.io/datatypes"
 )
 
-// Blade 模块配置
-type Blade struct {
+// ViewConfig 模块配置
+type ViewConfig struct {
 	Name    string         `json:"name" gorm:"primary_key"`
 	Props   datatypes.JSON `json:"props"`
 	Options datatypes.JSON `json:"options"`
@@ -13,6 +13,6 @@ type Blade struct {
 }
 
 // TableName 设置表名
-func (Blade) TableName() string {
+func (ViewConfig) TableName() string {
 	return "pipal.config_view"
 }

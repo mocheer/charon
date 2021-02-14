@@ -7,8 +7,8 @@ import (
 	"gorm.io/gorm"
 )
 
-// Stipule 应用配置
-type Stipule struct {
+// AppConfig 应用配置
+type AppConfig struct {
 	Name       string         `json:"name" gorm:"primary_key"`
 	Title      string         `json:"title"`
 	Enabled    bool           `json:"enabled"`
@@ -23,6 +23,6 @@ type Stipule struct {
 }
 
 // TableName 设置表名
-func (Stipule) TableName() string {
+func (AppConfig) TableName() string {
 	return "pipal.config_app"
 }
