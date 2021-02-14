@@ -12,9 +12,10 @@ import (
 	"github.com/mocheer/charon/src/models/types"
 )
 
+// MapServer implements TileCache for ESRI local files
 // @see https://github.com/wthorp/AGES/tree/master/pkg/sources/tilecache
-//Esri implements TileCache for ESRI local files
-type Esri struct {
+// @see https://github.com/fuzhenn/tiler-arcgis-bundle/blob/master/index.js
+type MapServer struct {
 	CacheFormat   string
 	BaseDirectory string
 	FileFormat    string
@@ -44,9 +45,9 @@ type CacheInfo struct {
 	}
 }
 
-//NewEsri returns a new Esri, based on a conf.xml path
-func NewEsri(confPath string) (*Esri, error) {
-	tc := &Esri{}
+//NewMapServer returns a new Esri, based on a conf.xml path
+func NewMapServer(confPath string) (*MapServer, error) {
+	tc := &MapServer{}
 	confXML, err := ioutil.ReadFile(confPath)
 	if err != nil {
 		return nil, err
@@ -96,24 +97,19 @@ func calcMinMaxLevels(cache *CacheInfo, baseDir string) (int, int) {
 }
 
 //ReadTile returns a 256x256 tile
-func (tc *Esri) ReadTile(tile types.Tile) ([]byte, error) {
-	if tc.CacheFormat == "esriMapCacheStorageModeCompact" {
+func (tc *MapServer) ReadTile(tile types.Tile) ([]byte, error) {
+	switch tc.CacheFormat {
+	case "esriMapCacheStorageModeCompact":
 		return tc.ReadCompactTile(tile)
+	case "esriMapCacheStorageModeCompactV2":
+		return tc.ReadCompactTileV2(tile)
+	default:
+		return tc.ReadExplodedTile(tile)
 	}
-	// esriMapCacheStorageModeCompactV2
-	return tc.ReadExplodedTile(tile)
-}
-
-//WriteTile writes a 256x256 tile
-func (tc *Esri) WriteTile(tile types.Tile, tileData []byte) error {
-	if tc.CacheFormat == "esriMapCacheStorageModeCompact" {
-		return tc.WriteCompactTile(tile, tileData)
-	}
-	return tc.WriteExplodedTile(tile, tileData)
 }
 
 //ReadCompactTile returns a bundled 256x256 tile
-func (tc *Esri) ReadCompactTile(tile types.Tile) ([]byte, error) {
+func (tc *MapServer) ReadCompactTile(tile types.Tile) ([]byte, error) {
 	bundlxPath, bundlePath, imgDataIndex := tc.GetFileInfo(tile)
 	bundlx, err := os.Open(bundlxPath)
 	if err != nil {
@@ -139,7 +135,7 @@ func (tc *Esri) ReadCompactTile(tile types.Tile) ([]byte, error) {
 }
 
 //ReadCompactTileV2 returns a bundled 256x256 tile
-func (tc *Esri) ReadCompactTileV2(tile types.Tile) ([]byte, error) {
+func (tc *MapServer) ReadCompactTileV2(tile types.Tile) ([]byte, error) {
 	_, bundlePath, _ := tc.GetFileInfo(tile)
 
 	var BUNDLX_MAXIDX = 128
@@ -148,7 +144,6 @@ func (tc *Esri) ReadCompactTileV2(tile types.Tile) ([]byte, error) {
 	var index = BUNDLX_MAXIDX*(tile.Row%BUNDLX_MAXIDX) + (tile.Column % BUNDLX_MAXIDX)
 
 	var offset = (index * 8) + COMPACT_CACHE_HEADER_LENGTH
-	// var length = 8
 
 	fmt.Println(index, offset, int64(offset))
 
@@ -159,13 +154,12 @@ func (tc *Esri) ReadCompactTileV2(tile types.Tile) ([]byte, error) {
 	defer bundle.Close()
 	bundle.Seek(int64(offset), io.SeekStart)
 
-	offsetBytes := make([]byte, 5, 8)
-	sizeBytes := make([]byte, 3, 4)
+	offsetBytes := make([]byte, 5, 8) //4,4
+	sizeBytes := make([]byte, 3, 4)   //4,4
 
 	bundle.Read(offsetBytes)
 	bundle.Read(sizeBytes)
 
-	fmt.Println(offsetBytes, sizeBytes)
 	offsetBytes = offsetBytes[:8]
 	sizeBytes = sizeBytes[:4]
 
@@ -173,21 +167,15 @@ func (tc *Esri) ReadCompactTileV2(tile types.Tile) ([]byte, error) {
 	fmt.Println(offsetBytes)
 
 	size := binary.LittleEndian.Uint32(sizeBytes)
-	fmt.Println(size)
-	// size = 256
+
 	imgBytes := make([]byte, size, size)
 	bundle.Seek(int64(dataOffset), io.SeekStart)
 	bundle.Read(imgBytes)
 	return imgBytes, nil
 }
 
-//WriteCompactTile writes a bundled 256x256 tile
-func (tc *Esri) WriteCompactTile(tile types.Tile, tileData []byte) error {
-	return fmt.Errorf("not implemented")
-}
-
 //GetFileInfo returns file paths and indexes into those files
-func (tc *Esri) GetFileInfo(tile types.Tile) (bundlxPath, bundlePath string, imgDataIndex int64) {
+func (tc *MapServer) GetFileInfo(tile types.Tile) (bundlxPath, bundlePath string, imgDataIndex int64) {
 	internalRow := tile.Row % tc.RowsPerFile
 	internalCol := tile.Column % tc.ColsPerFile
 	bundleRow := tile.Row - internalRow
@@ -200,17 +188,12 @@ func (tc *Esri) GetFileInfo(tile types.Tile) (bundlxPath, bundlePath string, img
 }
 
 //ReadExplodedTile returns a standalone 256x256 tile
-func (tc *Esri) ReadExplodedTile(tile types.Tile) ([]byte, error) {
+func (tc *MapServer) ReadExplodedTile(tile types.Tile) ([]byte, error) {
 	return ioutil.ReadFile(tc.GetFilePath(tile))
 }
 
-//WriteExplodedTile writes a standalone 256x256 tile
-func (tc *Esri) WriteExplodedTile(tile types.Tile, tileData []byte) error {
-	return ioutil.WriteFile(tc.GetFilePath(tile), tileData, 0644)
-}
-
 //GetFilePath return the primary file path, sans extension
-func (tc *Esri) GetFilePath(tile types.Tile) string {
+func (tc *MapServer) GetFilePath(tile types.Tile) string {
 	level := fmt.Sprintf("L%02d", tile.Level)
 	row := fmt.Sprintf("R%08x", tile.Row)
 	column := fmt.Sprintf("C%08x", tile.Column)
