@@ -1,4 +1,4 @@
-package gis
+package arcgis
 
 import "github.com/mocheer/charon/src/models/types"
 

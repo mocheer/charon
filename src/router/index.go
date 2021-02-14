@@ -16,8 +16,8 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/mocheer/charon/src/global"
 
+	"github.com/mocheer/charon/src/router/arcgis"
 	"github.com/mocheer/charon/src/router/auth"
-	"github.com/mocheer/charon/src/router/gis"
 	"github.com/mocheer/charon/src/router/model"
 	"github.com/mocheer/charon/src/router/pipal"
 	"github.com/mocheer/charon/src/router/proxies"
@@ -39,7 +39,7 @@ func useRouter(app *fiber.App) {
 	auth.Use(v1)
 	proxies.Use(v1)
 
-	gis.Use(v1)
+	arcgis.Use(v1)
 }
 
 // Init 初始化路由

@@ -1,4 +1,4 @@
-package gis
+package arcgis
 
 import (
 	"encoding/binary"

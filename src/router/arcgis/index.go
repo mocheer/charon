@@ -1,9 +1,10 @@
-package gis
+package arcgis
 
 import (
 	"fmt"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/mocheer/charon/src/core/res"
@@ -12,14 +13,15 @@ import (
 
 // Use 初始化 pipal 路由
 func Use(api fiber.Router) {
-	router := api.Group("/gis")
+	router := api.Group("/arcgis")
 	// query
-	router.Get("dmap/:name/:z/:y/:x", queryAppConfig)
+	router.Get("/tile/:name/:z/:y/:x", getTile)
 }
 
-// queryAppConfig
-func queryAppConfig(c *fiber.Ctx) error {
+// getTile
+func getTile(c *fiber.Ctx) error {
 	name := c.Params("name")
+	fmt.Println(name)
 	z := c.Params("z")
 	y := c.Params("y")
 	x := c.Params("x")
@@ -36,8 +38,7 @@ func queryAppConfig(c *fiber.Ctx) error {
 		if tileErr != nil {
 			fmt.Println(tileErr)
 		}
-		c.Type(tc.FileFormat)
-
+		c.Type(strings.ToLower(tc.FileFormat))
 		return c.Send(data)
 	}
 
