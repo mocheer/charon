@@ -9,41 +9,9 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/mocheer/charon/src/constants"
 	"github.com/mocheer/charon/src/models/types"
 )
-
-// MapServer implements TileCache for ESRI local files
-// @see https://github.com/wthorp/AGES/tree/master/pkg/sources/tilecache
-// @see https://github.com/fuzhenn/tiler-arcgis-bundle/blob/master/index.js
-type MapServer struct {
-	CacheFormat   string
-	BaseDirectory string
-	FileFormat    string
-	types.TileCache
-}
-
-//CacheInfo corresponds to an ESRI conf.xml document
-type CacheInfo struct {
-	TileCacheInfo struct {
-		LODInfos struct {
-			LODInfo []struct {
-				LevelID int
-			}
-		}
-		SpatialReference struct {
-			WKID int
-		}
-		TileCols int
-		TileRows int
-	}
-	TileImageInfo struct {
-		CacheTileFormat string
-	}
-	CacheStorageInfo struct {
-		StorageFormat string
-		PacketSize    *int
-	}
-}
 
 //NewMapServer returns a new Esri, based on a conf.xml path
 func NewMapServer(confPath string) (*MapServer, error) {
@@ -52,20 +20,20 @@ func NewMapServer(confPath string) (*MapServer, error) {
 	if err != nil {
 		return nil, err
 	}
-	var cache CacheInfo
-	err = xml.Unmarshal(confXML, &cache)
+	var config LayerConfig
+	err = xml.Unmarshal(confXML, &config)
 	if err != nil {
 		return nil, err
 	}
 	tc.BaseDirectory = filepath.Dir(confPath)
-	tc.MinLevel, tc.MaxLevel = calcMinMaxLevels(&cache, tc.BaseDirectory)
-	tc.FileFormat = cache.TileImageInfo.CacheTileFormat
-	tc.CacheFormat = cache.CacheStorageInfo.StorageFormat
-	packetSize := cache.CacheStorageInfo.PacketSize
+	tc.MinLevel, tc.MaxLevel = calcMinMaxLevels(&config, tc.BaseDirectory)
+	tc.FileFormat = config.TileImageInfo.CacheTileFormat
+	tc.CacheFormat = config.CacheStorageInfo.StorageFormat
+	packetSize := config.CacheStorageInfo.PacketSize
 	tc.HasTransparency = (tc.FileFormat == "PNG" || tc.FileFormat == "PNG32" || tc.FileFormat == "MIXED")
-	tc.EpsgCode = cache.TileCacheInfo.SpatialReference.WKID
-	tc.TileColumnSize = cache.TileCacheInfo.TileCols
-	tc.TileRowSize = cache.TileCacheInfo.TileRows
+	tc.EpsgCode = config.TileCacheInfo.SpatialReference.WKID
+	tc.TileColumnSize = config.TileCacheInfo.TileCols
+	tc.TileRowSize = config.TileCacheInfo.TileRows
 	if packetSize != nil {
 		tc.ColsPerFile, tc.RowsPerFile = *packetSize, *packetSize
 	} else {
@@ -75,7 +43,7 @@ func NewMapServer(confPath string) (*MapServer, error) {
 }
 
 //calcMinMaxLevels is called by NewEsri to return min and max levels
-func calcMinMaxLevels(cache *CacheInfo, baseDir string) (int, int) {
+func calcMinMaxLevels(cache *LayerConfig, baseDir string) (int, int) {
 	minLevel := int(^uint(0) >> 1)
 	maxLevel := 0
 	for _, li := range cache.TileCacheInfo.LODInfos.LODInfo {
@@ -137,15 +105,13 @@ func (tc *MapServer) ReadCompactTile(tile types.Tile) ([]byte, error) {
 //ReadCompactTileV2 returns a bundled 256x256 tile
 func (tc *MapServer) ReadCompactTileV2(tile types.Tile) ([]byte, error) {
 	_, bundlePath, _ := tc.GetFileInfo(tile)
+	var BundlxMaxidx = constants.BundlxMaxidx
+	var CompactCacheHeaderLength = constants.CompactCacheHeaderLength
 
-	var BUNDLX_MAXIDX = 128
-	var COMPACT_CACHE_HEADER_LENGTH = 64
 	// col and row are inverted for 10.3 caches
-	var index = BUNDLX_MAXIDX*(tile.Row%BUNDLX_MAXIDX) + (tile.Column % BUNDLX_MAXIDX)
+	var index = BundlxMaxidx*(tile.Row%BundlxMaxidx) + (tile.Column % BundlxMaxidx)
 
-	var offset = (index * 8) + COMPACT_CACHE_HEADER_LENGTH
-
-	fmt.Println(index, offset, int64(offset))
+	var offset = (index * 8) + CompactCacheHeaderLength
 
 	bundle, err := os.Open(bundlePath)
 	if err != nil {
@@ -164,7 +130,6 @@ func (tc *MapServer) ReadCompactTileV2(tile types.Tile) ([]byte, error) {
 	sizeBytes = sizeBytes[:4]
 
 	dataOffset := binary.LittleEndian.Uint64(offsetBytes)
-	fmt.Println(offsetBytes)
 
 	size := binary.LittleEndian.Uint32(sizeBytes)
 
@@ -198,7 +163,7 @@ func (tc *MapServer) GetFilePath(tile types.Tile) string {
 	row := fmt.Sprintf("R%08x", tile.Row)
 	column := fmt.Sprintf("C%08x", tile.Column)
 	filePath := filepath.Join(tc.BaseDirectory, level, row, column)
-	fmt.Println(tc.FileFormat)
+
 	if tc.FileFormat == "JPEG" {
 		return filePath + ".jpg" //JPEG
 	}
