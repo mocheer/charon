@@ -13,37 +13,37 @@ import (
 	"github.com/mocheer/charon/src/models/types"
 )
 
-//NewMapServer returns a new Esri, based on a conf.xml path
-func NewMapServer(confPath string) (*MapServer, error) {
-	tc := &MapServer{}
+//NewTileServer returns a new Esri, based on a conf.xml path
+func NewTileServer(confPath string) (*TileServer, error) {
+	server := &TileServer{}
 	confXML, err := ioutil.ReadFile(confPath)
 	if err != nil {
 		return nil, err
 	}
-	var config LayerConfig
+	var config TileLayerConfig
 	err = xml.Unmarshal(confXML, &config)
 	if err != nil {
 		return nil, err
 	}
-	tc.BaseDirectory = filepath.Dir(confPath)
-	tc.MinLevel, tc.MaxLevel = calcMinMaxLevels(&config, tc.BaseDirectory)
-	tc.FileFormat = config.TileImageInfo.CacheTileFormat
-	tc.CacheFormat = config.CacheStorageInfo.StorageFormat
+	server.BaseDirectory = filepath.Dir(confPath)
+	server.MinLevel, server.MaxLevel = calcMinMaxLevels(&config, server.BaseDirectory)
+	server.FileFormat = config.TileImageInfo.CacheTileFormat
+	server.CacheFormat = config.CacheStorageInfo.StorageFormat
+	server.HasTransparency = (server.FileFormat == "PNG" || server.FileFormat == "PNG32" || server.FileFormat == "MIXED")
+	server.EpsgCode = config.TileCacheInfo.SpatialReference.WKID
+	server.TileColumnSize = config.TileCacheInfo.TileCols
+	server.TileRowSize = config.TileCacheInfo.TileRows
 	packetSize := config.CacheStorageInfo.PacketSize
-	tc.HasTransparency = (tc.FileFormat == "PNG" || tc.FileFormat == "PNG32" || tc.FileFormat == "MIXED")
-	tc.EpsgCode = config.TileCacheInfo.SpatialReference.WKID
-	tc.TileColumnSize = config.TileCacheInfo.TileCols
-	tc.TileRowSize = config.TileCacheInfo.TileRows
 	if packetSize != nil {
-		tc.ColsPerFile, tc.RowsPerFile = *packetSize, *packetSize
+		server.ColsPerFile, server.RowsPerFile = *packetSize, *packetSize
 	} else {
-		tc.ColsPerFile, tc.RowsPerFile = 1, 1
+		server.ColsPerFile, server.RowsPerFile = 1, 1
 	}
-	return tc, nil
+	return server, nil
 }
 
 //calcMinMaxLevels is called by NewEsri to return min and max levels
-func calcMinMaxLevels(cache *LayerConfig, baseDir string) (int, int) {
+func calcMinMaxLevels(cache *TileLayerConfig, baseDir string) (int, int) {
 	minLevel := int(^uint(0) >> 1)
 	maxLevel := 0
 	for _, li := range cache.TileCacheInfo.LODInfos.LODInfo {
@@ -64,21 +64,21 @@ func calcMinMaxLevels(cache *LayerConfig, baseDir string) (int, int) {
 	return minLevel, maxLevel
 }
 
-//ReadTile returns a 256x256 tile
-func (tc *MapServer) ReadTile(tile types.Tile) ([]byte, error) {
-	switch tc.CacheFormat {
+// ReadTile returns a 256x256 tile
+func (server *TileServer) ReadTile(tile types.Tile) ([]byte, error) {
+	switch server.CacheFormat {
 	case "esriMapCacheStorageModeCompact":
-		return tc.ReadCompactTile(tile)
+		return server.ReadCompactTile(tile)
 	case "esriMapCacheStorageModeCompactV2":
-		return tc.ReadCompactTileV2(tile)
+		return server.ReadCompactTileV2(tile)
 	default:
-		return tc.ReadExplodedTile(tile)
+		return server.ReadExplodedTile(tile)
 	}
 }
 
-//ReadCompactTile returns a bundled 256x256 tile
-func (tc *MapServer) ReadCompactTile(tile types.Tile) ([]byte, error) {
-	bundlxPath, bundlePath, imgDataIndex := tc.GetFileInfo(tile)
+// ReadCompactTile returns a bundled 256x256 tile
+func (server *TileServer) ReadCompactTile(tile types.Tile) ([]byte, error) {
+	bundlxPath, bundlePath, imgDataIndex := server.GetFileInfo(tile)
 	bundlx, err := os.Open(bundlxPath)
 	if err != nil {
 		return nil, err
@@ -103,15 +103,14 @@ func (tc *MapServer) ReadCompactTile(tile types.Tile) ([]byte, error) {
 }
 
 //ReadCompactTileV2 returns a bundled 256x256 tile
-func (tc *MapServer) ReadCompactTileV2(tile types.Tile) ([]byte, error) {
-	_, bundlePath, _ := tc.GetFileInfo(tile)
-	var BundlxMaxidx = constants.BundlxMaxidx
-	var CompactCacheHeaderLength = constants.CompactCacheHeaderLength
+func (server *TileServer) ReadCompactTileV2(tile types.Tile) ([]byte, error) {
+	_, bundlePath, _ := server.GetFileInfo(tile)
+	BundlxMaxidx := constants.BundlxMaxidx
+	CompactCacheHeaderLength := constants.CompactCacheHeaderLength
 
 	// col and row are inverted for 10.3 caches
-	var index = BundlxMaxidx*(tile.Row%BundlxMaxidx) + (tile.Column % BundlxMaxidx)
-
-	var offset = (index * 8) + CompactCacheHeaderLength
+	index := BundlxMaxidx*(tile.Row%BundlxMaxidx) + (tile.Column % BundlxMaxidx)
+	offset := (index * 8) + CompactCacheHeaderLength
 
 	bundle, err := os.Open(bundlePath)
 	if err != nil {
@@ -140,34 +139,34 @@ func (tc *MapServer) ReadCompactTileV2(tile types.Tile) ([]byte, error) {
 }
 
 //GetFileInfo returns file paths and indexes into those files
-func (tc *MapServer) GetFileInfo(tile types.Tile) (bundlxPath, bundlePath string, imgDataIndex int64) {
-	internalRow := tile.Row % tc.RowsPerFile
-	internalCol := tile.Column % tc.ColsPerFile
+func (server *TileServer) GetFileInfo(tile types.Tile) (bundlxPath, bundlePath string, imgDataIndex int64) {
+	internalRow := tile.Row % server.RowsPerFile
+	internalCol := tile.Column % server.ColsPerFile
 	bundleRow := tile.Row - internalRow
 	bundleCol := tile.Column - internalCol
-	bundleBasePath := filepath.Join(tc.BaseDirectory, "_alllayers", fmt.Sprintf("L%02d", tile.Level), fmt.Sprintf("R%04xC%04x", bundleRow, bundleCol))
+	bundleBasePath := filepath.Join(server.BaseDirectory, "_alllayers", fmt.Sprintf("L%02d", tile.Level), fmt.Sprintf("R%04xC%04x", bundleRow, bundleCol))
 	bundlxPath = bundleBasePath + ".bundlx"
 	bundlePath = bundleBasePath + ".bundle"
-	imgDataIndex = int64((tc.ColsPerFile * internalCol) + internalRow)
+	imgDataIndex = int64((server.ColsPerFile * internalCol) + internalRow)
 	return bundlxPath, bundlePath, imgDataIndex
 }
 
 //ReadExplodedTile returns a standalone 256x256 tile
-func (tc *MapServer) ReadExplodedTile(tile types.Tile) ([]byte, error) {
-	return ioutil.ReadFile(tc.GetFilePath(tile))
+func (server *TileServer) ReadExplodedTile(tile types.Tile) ([]byte, error) {
+	return ioutil.ReadFile(server.GetFilePath(tile))
 }
 
 //GetFilePath return the primary file path, sans extension
-func (tc *MapServer) GetFilePath(tile types.Tile) string {
+func (server *TileServer) GetFilePath(tile types.Tile) string {
 	level := fmt.Sprintf("L%02d", tile.Level)
 	row := fmt.Sprintf("R%08x", tile.Row)
 	column := fmt.Sprintf("C%08x", tile.Column)
-	filePath := filepath.Join(tc.BaseDirectory, level, row, column)
+	filePath := filepath.Join(server.BaseDirectory, level, row, column)
 
-	if tc.FileFormat == "JPEG" {
+	if server.FileFormat == "JPEG" {
 		return filePath + ".jpg" //JPEG
 	}
-	if tc.FileFormat != "MIXED" {
+	if server.FileFormat != "MIXED" {
 		return filePath + ".png" //PNG, PNG8, PNG24, PNG32
 	}
 	if _, err := os.Stat(filePath + ".jpg"); err == nil {

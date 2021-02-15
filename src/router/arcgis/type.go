@@ -2,18 +2,18 @@ package arcgis
 
 import "github.com/mocheer/charon/src/models/types"
 
-// MapServer implements TileCache for ESRI local files
+// TileServer implements TileCache for ESRI local files
 // @see https://github.com/wthorp/AGES/tree/master/pkg/sources/tilecache
 // @see https://github.com/fuzhenn/tiler-arcgis-bundle/blob/master/index.js
-type MapServer struct {
+type TileServer struct {
 	CacheFormat   string
 	BaseDirectory string
 	FileFormat    string
 	types.TileCache
 }
 
-//LayerConfig corresponds to an ESRI conf.xml document
-type LayerConfig struct {
+//TileLayerConfig corresponds to an ESRI conf.xml document
+type TileLayerConfig struct {
 	TileCacheInfo struct {
 		LODInfos struct {
 			LODInfo []struct {
