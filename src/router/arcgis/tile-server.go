@@ -13,7 +13,7 @@ import (
 	"github.com/mocheer/charon/src/models/types"
 )
 
-//NewTileServer returns a new Esri, based on a conf.xml path
+//NewTileServer 根据config.xml实例化服务
 func NewTileServer(confPath string) (*TileServer, error) {
 	server := &TileServer{}
 	confXML, err := ioutil.ReadFile(confPath)
@@ -26,10 +26,8 @@ func NewTileServer(confPath string) (*TileServer, error) {
 		return nil, err
 	}
 	server.BaseDirectory = filepath.Dir(confPath)
-	server.MinLevel, server.MaxLevel = calcMinMaxLevels(&config, server.BaseDirectory)
 	server.FileFormat = config.TileImageInfo.CacheTileFormat
 	server.CacheFormat = config.CacheStorageInfo.StorageFormat
-	server.HasTransparency = (server.FileFormat == "PNG" || server.FileFormat == "PNG32" || server.FileFormat == "MIXED")
 	server.EpsgCode = config.TileCacheInfo.SpatialReference.WKID
 	server.TileColumnSize = config.TileCacheInfo.TileCols
 	server.TileRowSize = config.TileCacheInfo.TileRows
@@ -42,34 +40,12 @@ func NewTileServer(confPath string) (*TileServer, error) {
 	return server, nil
 }
 
-//calcMinMaxLevels is called by NewEsri to return min and max levels
-func calcMinMaxLevels(cache *TileLayerConfig, baseDir string) (int, int) {
-	minLevel := int(^uint(0) >> 1)
-	maxLevel := 0
-	for _, li := range cache.TileCacheInfo.LODInfos.LODInfo {
-		levelPath := filepath.Join(baseDir, "_alllayers", fmt.Sprintf("L%02d", li.LevelID))
-		if _, err := os.Stat(levelPath); err != nil {
-			continue
-		}
-		if li.LevelID > maxLevel {
-			maxLevel = li.LevelID
-		}
-		if li.LevelID < minLevel {
-			minLevel = li.LevelID
-		}
-	}
-	if minLevel > maxLevel {
-		minLevel = maxLevel
-	}
-	return minLevel, maxLevel
-}
-
-// ReadTile returns a 256x256 tile
+// ReadTile 返回瓦片数据
 func (server *TileServer) ReadTile(tile types.Tile) ([]byte, error) {
 	switch server.CacheFormat {
-	case "esriMapCacheStorageModeCompact":
+	case constants.EsriMapCacheStorageModeCompact:
 		return server.ReadCompactTile(tile)
-	case "esriMapCacheStorageModeCompactV2":
+	case constants.EsriMapCacheStorageModeCompactV2:
 		return server.ReadCompactTileV2(tile)
 	default:
 		return server.ReadExplodedTile(tile)
@@ -109,7 +85,7 @@ func (server *TileServer) ReadCompactTileV2(tile types.Tile) ([]byte, error) {
 	CompactCacheHeaderLength := constants.CompactCacheHeaderLength
 
 	// col and row are inverted for 10.3 caches
-	index := BundlxMaxidx*(tile.Row%BundlxMaxidx) + (tile.Column % BundlxMaxidx)
+	index := BundlxMaxidx*(tile.Y%BundlxMaxidx) + (tile.X % BundlxMaxidx)
 	offset := (index * 8) + CompactCacheHeaderLength
 
 	bundle, err := os.Open(bundlePath)
@@ -140,11 +116,11 @@ func (server *TileServer) ReadCompactTileV2(tile types.Tile) ([]byte, error) {
 
 //GetFileInfo returns file paths and indexes into those files
 func (server *TileServer) GetFileInfo(tile types.Tile) (bundlxPath, bundlePath string, imgDataIndex int64) {
-	internalRow := tile.Row % server.RowsPerFile
-	internalCol := tile.Column % server.ColsPerFile
-	bundleRow := tile.Row - internalRow
-	bundleCol := tile.Column - internalCol
-	bundleBasePath := filepath.Join(server.BaseDirectory, "_alllayers", fmt.Sprintf("L%02d", tile.Level), fmt.Sprintf("R%04xC%04x", bundleRow, bundleCol))
+	internalRow := tile.Y % server.RowsPerFile
+	internalCol := tile.X % server.ColsPerFile
+	bundleRow := tile.Y - internalRow
+	bundleCol := tile.X - internalCol
+	bundleBasePath := filepath.Join(server.BaseDirectory, "_alllayers", fmt.Sprintf("L%02d", tile.Z), fmt.Sprintf("R%04xC%04x", bundleRow, bundleCol))
 	bundlxPath = bundleBasePath + ".bundlx"
 	bundlePath = bundleBasePath + ".bundle"
 	imgDataIndex = int64((server.ColsPerFile * internalCol) + internalRow)
@@ -158,9 +134,9 @@ func (server *TileServer) ReadExplodedTile(tile types.Tile) ([]byte, error) {
 
 //GetFilePath return the primary file path, sans extension
 func (server *TileServer) GetFilePath(tile types.Tile) string {
-	level := fmt.Sprintf("L%02d", tile.Level)
-	row := fmt.Sprintf("R%08x", tile.Row)
-	column := fmt.Sprintf("C%08x", tile.Column)
+	level := fmt.Sprintf("L%02d", tile.Z)
+	row := fmt.Sprintf("R%08x", tile.Y)
+	column := fmt.Sprintf("C%08x", tile.X)
 	filePath := filepath.Join(server.BaseDirectory, level, row, column)
 
 	if server.FileFormat == "JPEG" {

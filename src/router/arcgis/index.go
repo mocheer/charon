@@ -10,30 +10,41 @@ import (
 	"github.com/mocheer/charon/src/models/types"
 )
 
-// Use 初始化 pipal 路由
+// Use 初始化 arcgis 路由
 func Use(api fiber.Router) {
 	router := api.Group("/arcgis")
-	// query
-	router.Get("/tile/:name/:z/:y/:x", getTile)
+	// GetCapabilities
+	router.Get("/:name/capabilities", getCapabilities)
+	// GetTile
+	router.Get("/:name/tile/:z/:y/:x", getTile)
+}
+
+// getCapabilities
+func getCapabilities(c *fiber.Ctx) error {
+	nameParam := c.Params("name")
+	server, err := NewTileServer(filepath.Join("./data/dmap", nameParam, "conf.xml"))
+	if err == nil {
+		return res.ResultOK(c, server)
+	}
+	return nil
 }
 
 // getTile
 func getTile(c *fiber.Ctx) error {
-	name := c.Params("name")
-	z := c.Params("z")
-	y := c.Params("y")
-	x := c.Params("x")
-	var Column, _ = strconv.Atoi(x)
-	var Row, _ = strconv.Atoi(y)
-	var Level, _ = strconv.Atoi(z)
-
-	tc, err := NewTileServer(filepath.Join("./data/dmap", name, "conf.xml"))
+	nameParam := c.Params("name")
+	zParam := c.Params("z")
+	yParam := c.Params("y")
+	xParam := c.Params("x")
+	server, err := NewTileServer(filepath.Join("./data/dmap", nameParam, "conf.xml"))
 	if err == nil {
-		data, err := tc.ReadTile(types.Tile{
-			Row: Row, Level: Level, Column: Column,
+		x, _ := strconv.Atoi(xParam)
+		y, _ := strconv.Atoi(yParam)
+		z, _ := strconv.Atoi(zParam)
+		data, err := server.ReadTile(types.Tile{
+			Z: z, Y: y, X: x,
 		})
 		if err == nil {
-			c.Type(strings.ToLower(tc.FileFormat))
+			c.Type(strings.ToLower(server.FileFormat))
 			return c.Send(data)
 		}
 	}
