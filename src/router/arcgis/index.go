@@ -10,6 +10,8 @@ import (
 	"github.com/mocheer/charon/src/models/types"
 )
 
+var cacheServer map[string]*TileServer = map[string]*TileServer{}
+
 // Use 初始化 arcgis 路由
 func Use(api fiber.Router) {
 	router := api.Group("/arcgis")
@@ -17,12 +19,13 @@ func Use(api fiber.Router) {
 	router.Get("/:name/capabilities", getCapabilities)
 	// GetTile
 	router.Get("/:name/tile/:z/:y/:x", getTile)
+	//
 }
 
 // getCapabilities
 func getCapabilities(c *fiber.Ctx) error {
 	nameParam := c.Params("name")
-	server, err := NewTileServer(filepath.Join("./data/dmap", nameParam, "conf.xml"))
+	server, err := NewTileServer(filepath.Join("./data/dmap/arcigs", nameParam, "conf.xml"))
 	if err == nil {
 		return res.ResultOK(c, server)
 	}
@@ -35,7 +38,12 @@ func getTile(c *fiber.Ctx) error {
 	zParam := c.Params("z")
 	yParam := c.Params("y")
 	xParam := c.Params("x")
-	server, err := NewTileServer(filepath.Join("./data/dmap", nameParam, "conf.xml"))
+	server, hasCache := cacheServer[nameParam]
+	var err error
+	if !hasCache {
+		server, err = NewTileServer(filepath.Join("./data/dmap/arcigs", nameParam, "conf.xml"))
+		cacheServer[nameParam] = server
+	}
 	if err == nil {
 		x, _ := strconv.Atoi(xParam)
 		y, _ := strconv.Atoi(yParam)
@@ -48,6 +56,6 @@ func getTile(c *fiber.Ctx) error {
 			return c.Send(data)
 		}
 	}
-
+	//
 	return res.ResultError(c, 500, "读取瓦片错误", err)
 }
