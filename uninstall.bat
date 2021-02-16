@@ -1,2 +1,2 @@
-%cd%\shell\nssm.exe stop charon
-%cd%\shell\nssm.exe remove charon
+%cd%\tools\nssm.exe stop charon
+%cd%\tools\nssm.exe remove charon

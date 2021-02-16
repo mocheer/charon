@@ -25,7 +25,7 @@ func Use(api fiber.Router) {
 // getCapabilities
 func getCapabilities(c *fiber.Ctx) error {
 	nameParam := c.Params("name")
-	server, err := NewTileServer(filepath.Join("./data/dmap/arcigs", nameParam, "conf.xml"))
+	server, err := NewTileServer(filepath.Join(BaseDirectory, nameParam, "conf.xml"))
 	if err == nil {
 		return res.ResultOK(c, server)
 	}
@@ -41,7 +41,7 @@ func getTile(c *fiber.Ctx) error {
 	server, hasCache := cacheServer[nameParam]
 	var err error
 	if !hasCache {
-		server, err = NewTileServer(filepath.Join("./data/dmap/arcigs", nameParam, "conf.xml"))
+		server, err = NewTileServer(filepath.Join(BaseDirectory, nameParam, "conf.xml"))
 		cacheServer[nameParam] = server
 	}
 	if err == nil {
