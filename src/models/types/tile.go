@@ -4,8 +4,3 @@ package types
 type Tile struct {
 	Z, Y, X int
 }
-
-// TileCache
-type TileCache struct {
-	TileColumnSize, TileRowSize, ColsPerFile, RowsPerFile, EpsgCode int
-}

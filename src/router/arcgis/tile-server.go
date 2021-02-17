@@ -16,7 +16,7 @@ import (
 //NewTileServer 根据config.xml实例化服务
 func NewTileServer(confPath string) (*TileServer, error) {
 	server := &TileServer{}
-	confXML, err := ioutil.ReadFile(confPath)
+	confXML, err := os.ReadFile(confPath)
 	if err != nil {
 		return nil, err
 	}
@@ -26,10 +26,10 @@ func NewTileServer(confPath string) (*TileServer, error) {
 		return nil, err
 	}
 	server.BaseDirectory = filepath.Dir(confPath)
-	server.FileFormat = config.TileImageInfo.CacheTileFormat
+	server.TileFormat = config.TileImageInfo.CacheTileFormat
 	server.CacheFormat = config.CacheStorageInfo.StorageFormat
-	server.EpsgCode = config.TileCacheInfo.SpatialReference.WKID
-	server.TileColumnSize = config.TileCacheInfo.TileCols
+	server.WKID = config.TileCacheInfo.SpatialReference.WKID
+	server.TileColSize = config.TileCacheInfo.TileCols
 	server.TileRowSize = config.TileCacheInfo.TileRows
 	packetSize := config.CacheStorageInfo.PacketSize
 	if packetSize != nil {
@@ -43,10 +43,10 @@ func NewTileServer(confPath string) (*TileServer, error) {
 // ReadTile 返回瓦片数据
 func (server *TileServer) ReadTile(tile types.Tile) ([]byte, error) {
 	switch server.CacheFormat {
-	case constants.EsriMapCacheStorageModeCompact:
-		return server.ReadCompactTile(tile)
 	case constants.EsriMapCacheStorageModeCompactV2:
 		return server.ReadCompactTileV2(tile)
+	case constants.EsriMapCacheStorageModeCompact:
+		return server.ReadCompactTile(tile)
 	default:
 		return server.ReadExplodedTile(tile)
 	}
@@ -139,10 +139,10 @@ func (server *TileServer) GetFilePath(tile types.Tile) string {
 	column := fmt.Sprintf("C%08x", tile.X)
 	filePath := filepath.Join(server.BaseDirectory, level, row, column)
 
-	if server.FileFormat == "JPEG" {
+	if server.TileFormat == "JPEG" {
 		return filePath + ".jpg" //JPEG
 	}
-	if server.FileFormat != "MIXED" {
+	if server.TileFormat != "MIXED" {
 		return filePath + ".png" //PNG, PNG8, PNG24, PNG32
 	}
 	if _, err := os.Stat(filePath + ".jpg"); err == nil {

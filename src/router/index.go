@@ -14,6 +14,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/favicon"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
+	"github.com/mocheer/charon/src/core/fs"
 	"github.com/mocheer/charon/src/global"
 
 	"github.com/mocheer/charon/src/router/arcgis"
@@ -54,9 +55,11 @@ func Init() {
 	// 发生错误时状态码为500，而且会将错误数据返回到前端
 	app.Use(recover.New())
 	// 图标
-	app.Use(favicon.New(favicon.Config{
-		File: "./public/favicon.ico",
-	}))
+	if fs.IsExist("./public/favicon.ico") {
+		app.Use(favicon.New(favicon.Config{
+			File: "./public/favicon.ico",
+		}))
+	}
 	// cors
 	app.Use(cors.New(cors.Config{
 		Next:             nil,

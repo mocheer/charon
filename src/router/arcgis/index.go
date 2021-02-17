@@ -52,7 +52,7 @@ func getTile(c *fiber.Ctx) error {
 			Z: z, Y: y, X: x,
 		})
 		if err == nil {
-			c.Type(strings.ToLower(server.FileFormat))
+			c.Type(strings.ToLower(server.TileFormat))
 			return c.Send(data)
 		}
 	}
