@@ -20,6 +20,7 @@ import (
 // Use 初始化 query 路由
 // @see http://apijson.cn/
 func Use(api fiber.Router) {
+	//
 	router := api.Group("/query")
 	// select
 	router.Get("/:name", store.GlobalCache, querySeclect)
@@ -54,7 +55,6 @@ func querySeclect(c *fiber.Ctx) error {
 	if selectQuery != "" {
 		// 不止是字段选择，还是字段重命名，且支持函数调用
 		query.Select(strings.Split(selectQuery, ","))
-
 	}
 
 	if whereQuery != "" {

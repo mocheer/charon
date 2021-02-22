@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/mocheer/charon/src/constants"
 	"github.com/mocheer/charon/src/models/types"
@@ -26,7 +27,7 @@ func NewTileServer(confPath string) (*TileServer, error) {
 		return nil, err
 	}
 	server.BaseDirectory = filepath.Dir(confPath)
-	server.TileFormat = config.TileImageInfo.CacheTileFormat
+	server.TileFormat = strings.ToLower(config.TileImageInfo.CacheTileFormat) //转成小写是因为fiber目前只支持小写
 	server.CacheFormat = config.CacheStorageInfo.StorageFormat
 	server.WKID = config.TileCacheInfo.SpatialReference.WKID
 	server.TileColSize = config.TileCacheInfo.TileCols
@@ -52,7 +53,7 @@ func (server *TileServer) ReadTile(tile types.Tile) ([]byte, error) {
 	}
 }
 
-// ReadCompactTile returns a bundled 256x256 tile
+// ReadCompactTile 返回紧凑型的切片数据
 func (server *TileServer) ReadCompactTile(tile types.Tile) ([]byte, error) {
 	bundlxPath, bundlePath, imgDataIndex := server.GetFileInfo(tile)
 	bundlx, err := os.Open(bundlxPath)
@@ -78,7 +79,7 @@ func (server *TileServer) ReadCompactTile(tile types.Tile) ([]byte, error) {
 	return imgBytes, nil
 }
 
-//ReadCompactTileV2 returns a bundled 256x256 tile
+// ReadCompactTileV2 返回紧凑型V2的切片数据
 func (server *TileServer) ReadCompactTileV2(tile types.Tile) ([]byte, error) {
 	_, bundlePath, _ := server.GetFileInfo(tile)
 	BundlxMaxidx := constants.BundlxMaxidx

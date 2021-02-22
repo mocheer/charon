@@ -1,6 +1,9 @@
 package fs
 
-import "os"
+import (
+	"image"
+	"os"
+)
 
 // IsExist 检查文件或目录是否存在
 func IsExist(fileName string) bool {
@@ -14,4 +17,14 @@ func CreateOrExist(path string) {
 	if !isExit {
 		os.Mkdir(path, os.ModePerm)
 	}
+}
+
+// GetImageFromFilePath 读取图片返回image对象
+func GetImageFromFilePath(filePath string) (image.Image, error) {
+	f, err := os.Open(filePath)
+	if err != nil {
+		return nil, err
+	}
+	image, _, err := image.Decode(f)
+	return image, err
 }
