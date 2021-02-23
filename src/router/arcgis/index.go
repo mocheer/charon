@@ -59,6 +59,5 @@ func getTile(c *fiber.Ctx) error {
 		}
 	}
 	//
-	// return res.ResultError(c, 500, "读取瓦片错误", err)
-	return nil
+	return res.ResultError(c, 500, "读取瓦片错误", err)
 }
