@@ -31,7 +31,7 @@ func getCapabilities(c *fiber.Ctx) error {
 	if err == nil {
 		return res.ResultOK(c, server)
 	}
-	return nil
+	return res.ResultError(c, 500, "获取服务元数据错误", err)
 }
 
 // getTile

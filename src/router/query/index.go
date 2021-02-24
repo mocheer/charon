@@ -2,7 +2,6 @@ package query
 
 import (
 	"encoding/json"
-	"strconv"
 	"strings"
 
 	"github.com/mocheer/charon/src/models"
@@ -38,59 +37,60 @@ func Use(api fiber.Router) {
 // matched, _ := regexp.MatchString(`pg_*`, nameParam)
 // querySeclect
 func querySeclect(c *fiber.Ctx) error {
-	var nameParam = c.Params("name")    // 表名
-	var modeQuery = c.Query("mode")     // 数据返回模式 take | first | last | find(default)
-	var whereQuery = c.Query("where")   // 查询 a=1 || {a:1}  => where a=1
-	var notQuery = c.Query("not")       // 查询 a=1 || {a:1}  => where not a=1
-	var selectQuery = c.Query("select") // 字段
-	var limitQuery = c.Query("limit")   //
-	// var offsetQuery = c.Query("offset") // 偏移
-	var orderQuery = c.Query("order") // 排序
+	var nameParam = c.Params("name") // 表名
+	var params = &SelectParams{}
+	if err := c.QueryParser(params); err != nil {
+		return err
+	}
 	var result []map[string]interface{}
 	var query = global.Db
 	var entity = models.TableMapGenerate[nameParam]()
 	//
 	query = query.Table(entity.TableName())
 	//
-	if selectQuery != "" {
+	if params.Select != "" {
 		// 不止是字段选择，还是字段重命名，且支持函数调用
-		query.Select(strings.Split(selectQuery, ","))
+		query.Select(strings.Split(params.Select, ","))
 	}
-
-	if whereQuery != "" {
+	//
+	if params.Where != "" {
 		var whereMap map[string]interface{}
-		err := json.Unmarshal([]byte(whereQuery), &whereMap)
+		err := json.Unmarshal([]byte(params.Where), &whereMap)
 		if err == nil {
 			query.Where(whereMap)
 		} else {
-			query.Where(whereQuery)
+			query.Where(params.Where)
 		}
 	}
-	if notQuery != "" {
+	if params.Not != "" {
 		var notMap map[string]interface{}
-		err := json.Unmarshal([]byte(notQuery), &notMap)
+		err := json.Unmarshal([]byte(params.Not), &notMap)
 		if err == nil {
 			query.Not(notMap)
 		} else {
-			query.Not(notQuery)
+			query.Not(params.Not)
 		}
 	}
 	//
-	if orderQuery != "" {
-		query.Order(orderQuery)
+	if params.Order != "" {
+		query.Order(params.Order)
+	}
+
+	if params.Limit != 0 {
+		query.Limit(params.Limit)
 	}
 	//
-	if limitQuery != "" {
-		limit, _ := strconv.Atoi(limitQuery)
-		query.Limit(limit)
+	if params.Offset != 0 {
+		query.Offset(params.Offset)
 	}
 
 	//
-	switch modeQuery {
+	switch params.Mode {
 	case "first":
 		query.First(entity)
 		return res.ResultOK(c, entity)
-		// return res.ResultOK(c, nil)
+		// db.ScanIntoMap(query, &result)
+		// return res.ResultOK(c, result[0])
 	case "last":
 		query.Last(entity)
 		return res.ResultOK(c, entity)

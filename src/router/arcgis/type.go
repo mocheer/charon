@@ -7,7 +7,7 @@ type TileServer struct {
 	BaseDirectory string // 根目录
 	CacheFormat   string // 切片缓存模式
 	TileFormat    string // 切片数据类型
-	TileColSize   int    // 切片column大小
+	TileColSize   int    // 切片 column 大小
 	TileRowSize   int    // 切片 row 大小
 	ColsPerFile   int    //
 	RowsPerFile   int    //

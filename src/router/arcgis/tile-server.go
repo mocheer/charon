@@ -5,7 +5,6 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -14,7 +13,7 @@ import (
 	"github.com/mocheer/charon/src/models/types"
 )
 
-//NewTileServer 根据config.xml实例化服务
+// NewTileServer 根据config.xml实例化服务
 func NewTileServer(confPath string) (*TileServer, error) {
 	server := &TileServer{}
 	confXML, err := os.ReadFile(confPath)
@@ -83,11 +82,10 @@ func (server *TileServer) ReadCompactTile(tile types.Tile) ([]byte, error) {
 func (server *TileServer) ReadCompactTileV2(tile types.Tile) ([]byte, error) {
 	_, bundlePath, _ := server.GetFileInfo(tile)
 	BundlxMaxidx := constants.BundlxMaxidx
-	CompactCacheHeaderLength := constants.CompactCacheHeaderLength
 
 	// col and row are inverted for 10.3 caches
 	index := BundlxMaxidx*(tile.Y%BundlxMaxidx) + (tile.X % BundlxMaxidx)
-	offset := (index * 8) + CompactCacheHeaderLength
+	offset := (index * 8) + constants.CompactCacheHeaderLength
 
 	bundle, err := os.Open(bundlePath)
 	if err != nil {
@@ -96,8 +94,8 @@ func (server *TileServer) ReadCompactTileV2(tile types.Tile) ([]byte, error) {
 	defer bundle.Close()
 	bundle.Seek(int64(offset), io.SeekStart)
 
-	offsetBytes := make([]byte, 5, 8) //4,4
-	sizeBytes := make([]byte, 3, 4)   //4,4
+	offsetBytes := make([]byte, 5, 8)
+	sizeBytes := make([]byte, 3, 4)
 
 	bundle.Read(offsetBytes)
 	bundle.Read(sizeBytes)
@@ -106,16 +104,16 @@ func (server *TileServer) ReadCompactTileV2(tile types.Tile) ([]byte, error) {
 	sizeBytes = sizeBytes[:4]
 
 	dataOffset := binary.LittleEndian.Uint64(offsetBytes)
-
 	size := binary.LittleEndian.Uint32(sizeBytes)
 
 	imgBytes := make([]byte, size, size)
 	bundle.Seek(int64(dataOffset), io.SeekStart)
 	bundle.Read(imgBytes)
+
 	return imgBytes, nil
 }
 
-//GetFileInfo returns file paths and indexes into those files
+// GetFileInfo 返回文件路径和数据索引
 func (server *TileServer) GetFileInfo(tile types.Tile) (bundlxPath, bundlePath string, imgDataIndex int64) {
 	internalRow := tile.Y % server.RowsPerFile
 	internalCol := tile.X % server.ColsPerFile
@@ -128,12 +126,12 @@ func (server *TileServer) GetFileInfo(tile types.Tile) (bundlxPath, bundlePath s
 	return bundlxPath, bundlePath, imgDataIndex
 }
 
-//ReadExplodedTile returns a standalone 256x256 tile
+// ReadExplodedTile 返回单张瓦片
 func (server *TileServer) ReadExplodedTile(tile types.Tile) ([]byte, error) {
-	return ioutil.ReadFile(server.GetFilePath(tile))
+	return os.ReadFile(server.GetFilePath(tile))
 }
 
-//GetFilePath return the primary file path, sans extension
+// GetFilePath 返回图片路径
 func (server *TileServer) GetFilePath(tile types.Tile) string {
 	level := fmt.Sprintf("L%02d", tile.Z)
 	row := fmt.Sprintf("R%08x", tile.Y)
