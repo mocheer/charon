@@ -21,6 +21,7 @@ func getUserByUsername(userName string) (*tables.User, error) {
 	return &user, nil
 }
 
+// hashAndSalt 加盐加密
 func hashAndSalt(password string) string {
 	hash, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.MinCost)
 	return string(hash)

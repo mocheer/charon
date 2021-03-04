@@ -39,7 +39,7 @@ func useRouter(app *fiber.App) {
 	model.Use(v1)
 	auth.Use(v1)
 	proxies.Use(v1)
-
+	//
 	arcgis.Use(v1)
 }
 

@@ -42,11 +42,11 @@ func querySeclect(c *fiber.Ctx) error {
 	if err := c.QueryParser(params); err != nil {
 		return err
 	}
-	var result []map[string]interface{}
+
 	var query = global.Db
-	var entity = models.TableMapGenerate[nameParam]()
+	var entity = models.NewTableStruct(nameParam)
 	//
-	query = query.Table(entity.TableName())
+	query = query.Model(entity)
 	//
 	if params.Select != "" {
 		// 不止是字段选择，还是字段重命名，且支持函数调用
@@ -89,26 +89,25 @@ func querySeclect(c *fiber.Ctx) error {
 	case "first":
 		query.First(entity)
 		return res.ResultOK(c, entity)
-		// db.ScanIntoMap(query, &result)
-		// return res.ResultOK(c, result[0])
 	case "last":
-		query.Last(entity)
+		query.Last(&entity)
 		return res.ResultOK(c, entity)
 	case "find":
+		var result = models.NewTableStructArray(nameParam)
 		query.Find(result)
-		break
+		return res.ResultOK(c, result)
 	default:
+		var result []map[string]interface{}
 		db.ScanIntoMap(query, &result)
+		return res.ResultOK(c, result)
 	}
-
-	return res.ResultOK(c, result)
 }
 
 func queryInsert(c *fiber.Ctx) error {
 	var nameParam = c.Params("name")
-	var entity = models.TableMapGenerate[nameParam]()
-	json.Unmarshal(c.Body(), entity)
-	var query = global.Db.Table(entity.TableName())
+	var entity = models.NewTableStruct(nameParam)
+	c.BodyParser(entity)
+	var query = global.Db.Model(entity)
 	query.Create(entity)
 	return res.ResultOK(c, true)
 }
@@ -116,11 +115,9 @@ func queryInsert(c *fiber.Ctx) error {
 func queryUpdate(c *fiber.Ctx) error {
 	var nameParam = c.Params("name")
 	var whereQuery = c.Query("where")
-
-	var body map[string]interface{}
-	var entity = models.TableMapGenerate[nameParam]()
-	var query = global.Db.Table(entity.TableName())
-	json.Unmarshal(c.Body(), &body)
+	var entity = models.NewTableStruct(nameParam)
+	var query = global.Db.Model(entity)
+	json.Unmarshal(c.Body(), entity)
 	if whereQuery != "" {
 		var whereMap map[string]interface{}
 		err := json.Unmarshal([]byte(whereQuery), &whereMap)
@@ -131,7 +128,7 @@ func queryUpdate(c *fiber.Ctx) error {
 		}
 	}
 
-	query.Updates(body)
+	query.Updates(entity)
 	return res.ResultOK(c, query.RowsAffected > 1)
 }
 
@@ -140,7 +137,7 @@ func queryDelete(c *fiber.Ctx) error {
 	var nameParam = c.Params("name")
 	var whereQuery = c.Query("where")
 	//
-	var entity = models.TableMapGenerate[nameParam]()
+	var entity = models.NewTableStruct(nameParam)
 	json.Unmarshal(c.Body(), entity)
 	var query = global.Db.Table(entity.TableName())
 	//

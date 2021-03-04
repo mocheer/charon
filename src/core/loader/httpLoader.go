@@ -2,7 +2,6 @@ package loader
 
 import (
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 )
@@ -27,7 +26,7 @@ func Load(url string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	body, err := ioutil.ReadAll(resp.Body) //body 拿到请求返回的内容
+	body, err := io.ReadAll(resp.Body) //body 拿到请求返回的内容
 	defer resp.Body.Close()
 	if err != nil {
 		return nil, err

@@ -14,12 +14,12 @@ type AppConfig struct {
 	Enabled    bool           `json:"enabled"`
 	Theme      string         `json:"theme"`
 	Options    datatypes.JSON `json:"options"`
-	VersionAPI int            `json:"version_api"`
-	VersionLib int            `json:"version_lib"`
+	VersionAPI int            `json:"versionApi"`
+	VersionLib int            `json:"versionLib"`
 	Remark     string         `json:"remark"`
-	CreateAt   time.Time      `json:"create_time"`
-	UpdateAt   time.Time      `json:"update_time"`
-	DeletedAt  gorm.DeletedAt `json:"deleted_at"`
+	CreateAt   time.Time      `json:"createAt"`
+	UpdateAt   time.Time      `json:"updateAt"`
+	DeletedAt  gorm.DeletedAt `json:"deletedAt"`
 }
 
 // TableName 设置表名

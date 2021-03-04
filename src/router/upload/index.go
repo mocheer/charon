@@ -16,57 +16,43 @@ import (
 func Use(api fiber.Router) {
 	router := api.Group("/upload")
 	// 上传文件
-	router.Post("/file", auth.GlobalProtected, auth.PermissProtectd, uploadFile)
+	router.Post("/file/*", auth.GlobalProtected, auth.PermissProtectd, uploadFile)
 	// 上传多个文件
-	router.Post("/files", auth.GlobalProtected, auth.PermissProtectd, uploadFiles)
+	router.Post("/files/*", auth.GlobalProtected, auth.PermissProtectd, uploadFiles)
 	// 上传文件夹（支持chrome）
 	router.Post("/folder", auth.GlobalProtected, auth.PermissProtectd, uploadFolder)
 }
 
 // uploadFile 上传文件
 func uploadFile(c *fiber.Ctx) error {
-	// Get first file from form field "document":
+	var baseDir = c.Params("*", "data")
 	file, err := c.FormFile("file")
 	if err != nil {
 		return err
 	}
-	// Save file to root directory:
-	return c.SaveFile(file, fmt.Sprintf("./data/%s", file.Filename))
+	return c.SaveFile(file, fmt.Sprintf("./%s/%s", baseDir, file.Filename))
 }
 
 // uploadFiles 上传多个文件
 func uploadFiles(c *fiber.Ctx) error {
-	var baseDir = c.Query("*")
-	if baseDir == "" {
-		baseDir = "data"
-	}
-	// Parse the multipart form:
+	var baseDir = c.Params("*", "data")
 	form, err := c.MultipartForm()
 	if err != nil {
 		return err
 	}
-	// => *multipart.Form
-
-	// Get all files from "documents" key:
 	files := form.File["files"]
-	// => []*multipart.FileHeader
-
-	// Loop through files:
 	for _, file := range files {
-		// fmt.Println(file.Filename, file.Size, file.Header["Content-Type"][0])
-		// => "tutorial.pdf" 360641 "application/pdf"
-
-		// Save the files to disk:
 		dst := path.Join(baseDir, file.Filename)
 		dir := path.Dir(dst)
 		fn.MkdirNotExist(dir)
+		fmt.Println(dir, file.Filename)
 		err := c.SaveFile(file, dst)
-
-		// Check for errors
 		if err != nil {
 			return err
 		}
 	}
+	global.Db.Exec("select * from pipal.update_app_lib_version()")
+
 	return res.ResultOK(c, true)
 }
 

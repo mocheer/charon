@@ -7,7 +7,7 @@ import (
 
 // PageConfig 页面配置
 type PageConfig struct {
-	AppName   string         `json:"app_name" gorm:"primary_key"`
+	AppName   string         `json:"appName" gorm:"primary_key"`
 	Name      string         `json:"name" gorm:"primary_key"`
 	Dep       string         `json:"dep"`
 	Guard     bool           `json:"guard"`
@@ -16,7 +16,7 @@ type PageConfig struct {
 	Mime      string         `json:"mime"`
 	Log       string         `json:"log"`
 	Remark    string         `json:"remark"`
-	DeletedAt gorm.DeletedAt `json:"deleted_at"`
+	DeletedAt gorm.DeletedAt `json:"deletedAt"`
 }
 
 // TableName 设置表名
