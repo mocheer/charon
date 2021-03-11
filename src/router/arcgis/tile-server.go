@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/mocheer/charon/src/constants"
 	"github.com/mocheer/charon/src/models/types"
 )
 
@@ -43,9 +42,9 @@ func NewTileServer(confPath string) (*TileServer, error) {
 // ReadTile 返回瓦片数据
 func (server *TileServer) ReadTile(tile types.Tile) ([]byte, error) {
 	switch server.CacheFormat {
-	case constants.EsriMapCacheStorageModeCompactV2:
+	case EsriMapCacheStorageModeCompactV2:
 		return server.ReadCompactTileV2(tile)
-	case constants.EsriMapCacheStorageModeCompact:
+	case EsriMapCacheStorageModeCompact:
 		return server.ReadCompactTile(tile)
 	default:
 		return server.ReadExplodedTile(tile)
@@ -81,11 +80,11 @@ func (server *TileServer) ReadCompactTile(tile types.Tile) ([]byte, error) {
 // ReadCompactTileV2 返回紧凑型V2的切片数据
 func (server *TileServer) ReadCompactTileV2(tile types.Tile) ([]byte, error) {
 	_, bundlePath, _ := server.GetFileInfo(tile)
-	BundlxMaxidx := constants.BundlxMaxidx
+	BundlxMaxidx := BundlxMaxidx
 
 	// col and row are inverted for 10.3 caches
 	index := BundlxMaxidx*(tile.Y%BundlxMaxidx) + (tile.X % BundlxMaxidx)
-	offset := (index * 8) + constants.CompactCacheHeaderLength
+	offset := (index * 8) + CompactCacheHeaderLength
 
 	bundle, err := os.Open(bundlePath)
 	if err != nil {

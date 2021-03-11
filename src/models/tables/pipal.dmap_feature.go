@@ -1,9 +1,14 @@
 package tables
 
+import "gorm.io/datatypes"
+
 // DmapFeature 应用配置
 type DmapFeature struct {
-	LayerID int `json:"layer_id"`
-	ID      int `json:"name"`
+	LayerID    int            `json:"layer_id"`
+	ID         int            `json:"id"`
+	Geometry   datatypes.JSON `json:"geometry"`
+	Options    datatypes.JSON `json:"options"`
+	Properties datatypes.JSON `json:"properties"`
 }
 
 // TableName 设置表名

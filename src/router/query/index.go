@@ -2,13 +2,13 @@ package query
 
 import (
 	"encoding/json"
-	"strings"
 
 	"github.com/mocheer/charon/src/models"
 	"github.com/mocheer/charon/src/router/auth"
 	"github.com/mocheer/charon/src/router/store"
 
 	"github.com/mocheer/charon/src/core/db"
+	"github.com/mocheer/charon/src/models/orm"
 	"github.com/mocheer/charon/src/models/tables"
 
 	"github.com/gofiber/fiber/v2"
@@ -37,70 +37,13 @@ func Use(api fiber.Router) {
 // matched, _ := regexp.MatchString(`pg_*`, nameParam)
 // querySeclect
 func querySeclect(c *fiber.Ctx) error {
-	var nameParam = c.Params("name") // 表名
-	var params = &SelectParams{}
-	if err := c.QueryParser(params); err != nil {
+	var builder = &orm.SelectBuilder{}
+	if err := c.QueryParser(builder); err != nil {
 		return err
 	}
-
-	var query = global.Db
-	var entity = models.NewTableStruct(nameParam)
-	//
-	query = query.Model(entity)
-	//
-	if params.Select != "" {
-		// 不止是字段选择，还是字段重命名，且支持函数调用
-		query.Select(strings.Split(params.Select, ","))
-	}
-	//
-	if params.Where != "" {
-		var whereMap map[string]interface{}
-		err := json.Unmarshal([]byte(params.Where), &whereMap)
-		if err == nil {
-			query.Where(whereMap)
-		} else {
-			query.Where(params.Where)
-		}
-	}
-	if params.Not != "" {
-		var notMap map[string]interface{}
-		err := json.Unmarshal([]byte(params.Not), &notMap)
-		if err == nil {
-			query.Not(notMap)
-		} else {
-			query.Not(params.Not)
-		}
-	}
-	//
-	if params.Order != "" {
-		query.Order(params.Order)
-	}
-
-	if params.Limit != 0 {
-		query.Limit(params.Limit)
-	}
-	//
-	if params.Offset != 0 {
-		query.Offset(params.Offset)
-	}
-
-	//
-	switch params.Mode {
-	case "first":
-		query.First(entity)
-		return res.ResultOK(c, entity)
-	case "last":
-		query.Last(&entity)
-		return res.ResultOK(c, entity)
-	case "find":
-		var result = models.NewTableStructArray(nameParam)
-		query.Find(result)
-		return res.ResultOK(c, result)
-	default:
-		var result []map[string]interface{}
-		db.ScanIntoMap(query, &result)
-		return res.ResultOK(c, result)
-	}
+	builder.Name = c.Params("name")
+	result := builder.Query()
+	return res.ResultOK(c, result)
 }
 
 func queryInsert(c *fiber.Ctx) error {

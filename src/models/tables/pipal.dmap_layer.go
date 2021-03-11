@@ -12,6 +12,7 @@ type DmapLayer struct {
 	Extent     datatypes.JSON `json:"extent"`
 	Options    datatypes.JSON `json:"options"`
 	Properties datatypes.JSON `json:"properties"`
+	Items      datatypes.JSON `json:"items"` // 关联查询字段
 }
 
 // TableName 设置表名

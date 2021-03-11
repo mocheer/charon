@@ -19,6 +19,7 @@ import (
 
 	"github.com/mocheer/charon/src/router/arcgis"
 	"github.com/mocheer/charon/src/router/auth"
+	"github.com/mocheer/charon/src/router/dmap"
 	"github.com/mocheer/charon/src/router/model"
 	"github.com/mocheer/charon/src/router/pipal"
 	"github.com/mocheer/charon/src/router/proxies"
@@ -41,6 +42,7 @@ func useRouter(app *fiber.App) {
 	proxies.Use(v1)
 	//
 	arcgis.Use(v1)
+	dmap.Use(v1)
 }
 
 // Init 初始化路由

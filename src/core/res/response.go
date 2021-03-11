@@ -8,13 +8,12 @@ import (
 type Response struct {
 	Code int         `json:"code"`
 	Data interface{} `json:"data"`
-	Msg  string      `json:"msg"`
+	Msg  interface{} `json:"msg"`
 }
 
 // Result 约定返回的数据格式
-func Result(c *fiber.Ctx, data interface{}, code int, msg string) error {
-	// 开始时间
-	return c.JSON(Response{
+func Result(c *fiber.Ctx, code int, data interface{}, msg interface{}) error {
+	return c.Status(code).JSON(Response{
 		code,
 		data,
 		msg,
@@ -23,11 +22,10 @@ func Result(c *fiber.Ctx, data interface{}, code int, msg string) error {
 
 // ResultOK 返回成功
 func ResultOK(c *fiber.Ctx, data interface{}) error {
-	// 开始时间
-	return Result(c, data, fiber.StatusOK, "")
+	return Result(c, fiber.StatusOK, data, "")
 }
 
 // ResultError 返回错误信息
-func ResultError(c *fiber.Ctx, code int, msg string, err error) error {
-	return Result(c.Status(code), err, code, msg)
+func ResultError(c *fiber.Ctx, data string, err error) error {
+	return Result(c, fiber.StatusInternalServerError, data, err)
 }

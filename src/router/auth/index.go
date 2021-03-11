@@ -25,19 +25,19 @@ func login(c *fiber.Ctx) error {
 	var input LoginInput
 
 	if err := c.BodyParser(&input); err != nil {
-		return res.ResultError(c, fiber.StatusBadRequest, "Error on login request", err)
+		return res.Result(c, fiber.StatusBadRequest, "Error on login request", err)
 	}
 	username := input.Username
 	password := input.Password
 
 	user, err := getUserByUsername(username)
 	if err != nil {
-		return res.ResultError(c, fiber.StatusUnauthorized, "Error on username", err)
+		return res.Result(c, fiber.StatusUnauthorized, "Error on username", err)
 	}
 
 	// 这里直接判断原始密码有问题
 	if !CheckPasswordHash(password, user.Password) {
-		return res.ResultError(c, fiber.StatusUnauthorized, "Invalid password", nil)
+		return res.Result(c, fiber.StatusUnauthorized, "Invalid password", nil)
 	}
 
 	token := jwt.New(jwt.SigningMethodHS256)
@@ -67,13 +67,13 @@ func signup(c *fiber.Ctx) error {
 	var input LoginInput
 
 	if err := c.BodyParser(&input); err != nil {
-		return res.ResultError(c, fiber.StatusBadRequest, "参数有误", err)
+		return res.Result(c, fiber.StatusBadRequest, "参数有误", err)
 	}
 	password := hashAndSalt(input.Password)
 	query := global.Db.Create(tables.User{Name: input.Username, Password: password})
 	//
 	if query.Error != nil {
-		return res.ResultError(c, fiber.StatusInternalServerError, "注册失败", query.Error)
+		return res.Result(c, fiber.StatusInternalServerError, "注册失败", query.Error)
 	}
 
 	return res.ResultOK(c, true)

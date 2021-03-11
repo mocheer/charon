@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/mocheer/charon/src/core/fn"
+	"github.com/mocheer/charon/src/core/fs"
 	"github.com/mocheer/charon/src/core/res"
 	"github.com/mocheer/charon/src/global"
 	"github.com/mocheer/charon/src/router/auth"
@@ -44,8 +44,7 @@ func uploadFiles(c *fiber.Ctx) error {
 	for _, file := range files {
 		dst := path.Join(baseDir, file.Filename)
 		dir := path.Dir(dst)
-		fn.MkdirNotExist(dir)
-		fmt.Println(dir, file.Filename)
+		fs.MkdirNotExist(dir)
 		err := c.SaveFile(file, dst)
 		if err != nil {
 			return err
@@ -69,14 +68,13 @@ func uploadFolder(c *fiber.Ctx) error {
 		if strings.HasPrefix(fileName, "dist") {
 			fileName = strings.Replace(fileName, "dist/", "", 1)
 			dst := path.Join(baseDir, fileName)
-			dir := path.Dir(dst)
-			fn.MkdirNotExist(dir)
+			fs.MkdirNotExist(dst)
 			err := c.SaveFile(file, dst)
 			if err != nil {
 				return err
 			}
 		} else {
-			fmt.Println("error dir:", fileName)
+			return res.ResultError(c, "上传的文件夹不符合规范", nil)
 		}
 	}
 	global.Db.Exec("select * from pipal.update_app_lib_version()")

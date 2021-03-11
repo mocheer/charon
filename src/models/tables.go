@@ -35,6 +35,9 @@ func NewTableStructArray(name string) interface{} {
 	case "view":
 		var result []tables.ViewConfig
 		return &result
+	case "feature":
+		var result []tables.DmapFeature
+		return &result
 	default:
 		return []map[string]interface{}{}
 	}
