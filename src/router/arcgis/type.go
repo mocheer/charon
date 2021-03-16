@@ -14,7 +14,7 @@ type TileServer struct {
 	WKID          int    // 切片服务wkid
 }
 
-//TileLayerConfig corresponds to an ESRI conf.xml document
+// TileLayerConfig corresponds to an ESRI conf.xml document
 type TileLayerConfig struct {
 	TileCacheInfo struct {
 		LODInfos struct {

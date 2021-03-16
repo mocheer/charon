@@ -22,7 +22,7 @@ type SelectBuilder struct {
 	Order  string `query:"order"`  // 排序
 	// 私有属性
 	model  *gorm.DB
-	entity models.Entity
+	entity models.IEntity
 }
 
 // Model 设置模型

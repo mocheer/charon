@@ -2,6 +2,7 @@ package dmap
 
 import "github.com/mocheer/charon/src/models/orm"
 
+// @see https://github.com/shengzheng1981/green-gis-server
 // Bbox 视野范围
 type Bbox struct {
 	MinX float64

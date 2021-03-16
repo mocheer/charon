@@ -6,11 +6,6 @@ import (
 	"github.com/mocheer/charon/src/models/tables"
 )
 
-// Entity 实体抽象类
-type Entity interface {
-	TableName() string
-}
-
 // Has 判断对象是否包含某一个类型
 func Has(obj interface{}, key string) bool {
 	t := reflect.TypeOf(obj).Elem()
@@ -19,7 +14,7 @@ func Has(obj interface{}, key string) bool {
 }
 
 // NewTableStruct 实例化结构体
-func NewTableStruct(name string) Entity {
+func NewTableStruct(name string) IEntity {
 	return tableMapFunc[name]()
 }
 
@@ -52,11 +47,11 @@ func GenerateTableStruct(name string) reflect.Value {
 }
 
 // tableMapFunc 映射
-var tableMapFunc = map[string]func() Entity{
-	"app":     func() Entity { return &tables.AppConfig{} },
-	"page":    func() Entity { return &tables.PageConfig{} },
-	"view":    func() Entity { return &tables.ViewConfig{} },
-	"dmap":    func() Entity { return &tables.Dmap{} },
-	"layer":   func() Entity { return &tables.DmapLayer{} },
-	"feature": func() Entity { return &tables.DmapFeature{} },
+var tableMapFunc = map[string]func() IEntity{
+	"app":     func() IEntity { return &tables.AppConfig{} },
+	"page":    func() IEntity { return &tables.PageConfig{} },
+	"view":    func() IEntity { return &tables.ViewConfig{} },
+	"dmap":    func() IEntity { return &tables.Dmap{} },
+	"layer":   func() IEntity { return &tables.DmapLayer{} },
+	"feature": func() IEntity { return &tables.DmapFeature{} },
 }

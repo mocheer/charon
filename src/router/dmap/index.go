@@ -9,6 +9,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/mocheer/charon/src/core/res"
 	"github.com/mocheer/charon/src/models/orm"
+	"github.com/mocheer/charon/src/models/tables"
 	"github.com/mocheer/charon/src/models/types"
 	"github.com/mocheer/charon/src/router/store"
 )
@@ -17,7 +18,7 @@ import (
 func Use(api fiber.Router) {
 	router := api.Group("/dmap")
 	//
-	router.Get("/image/:id/:z/:y:x", store.GlobalCache, imageHandle)
+	router.Get("/image/:id/:z/:y/:x", imageHandle)
 	router.Get("/layer/:id", store.GlobalCache, layerHandle)
 	router.Get("/feature/:id", store.GlobalCache, featureHandle)
 	router.Get("/identify/:id", store.GlobalCache, identifyHandle)
@@ -32,28 +33,49 @@ func imageHandle(c *fiber.Ctx) error {
 	yParam := c.Params("y")
 	xParam := c.Params("x")
 
-	id, _ := strconv.Atoi(idParam)
 	x, _ := strconv.Atoi(xParam)
 	y, _ := strconv.Atoi(yParam)
 	z, _ := strconv.Atoi(zParam)
 
-	layer := NewDynamicLayer(id, &types.Tile{
+	dynamicLayer := NewDynamicLayer(&types.Tile{
 		Z: z, Y: y, X: x,
 	})
 
-	if layer != nil {
+	if dynamicLayer != nil {
+		builder := &orm.SelectBuilder{}
+		builder.Name = "feature"
+		builder.Mode = "find"
+		builder.Where = fmt.Sprintf("layer_id=%s", idParam)
+		builder.Select = "layer_id,id,ST_AsGeoJson(geometry,4) as geometry,options,properties"
 
+		result := builder.Query()
+		features := result.(*[]tables.DmapFeature)
+		builder = &orm.SelectBuilder{}
+		builder.Name = "layer"
+		builder.Mode = "first"
+		builder.Where = fmt.Sprintf("id=%s", idParam)
+		layerInfo := builder.Query()
+		layer := layerInfo.(*tables.DmapLayer)
+
+		dynamicLayer.SetOptions(layer.Options)
+
+		for _, feature := range *features {
+			dynamicLayer.Draw(feature.Geometry)
+		}
+
+		c.Type("png")
+		return c.Send(dynamicLayer.getData())
 	}
 
 	return res.ResultError(c, "获取数据错误", nil)
 }
 
 func layerHandle(c *fiber.Ctx) error {
-	id := c.Params("id")
+	idParam := c.Params("id")
 	builder := &orm.SelectBuilder{}
 	builder.Name = "layer"
 	builder.Mode = "first"
-	builder.Where = fmt.Sprintf("id=%s", id)
+	builder.Where = fmt.Sprintf("id=%s", idParam)
 	builder.Select = "crs,extent,id,name,options,type,properties,array_to_json(array(select row_to_json(e) from (select * from pipal.dmap_layer where parent_id = 1)e)) as items"
 	result := builder.Query()
 

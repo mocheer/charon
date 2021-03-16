@@ -24,7 +24,7 @@ func queryAppConfig(c *fiber.Ctx) error {
 	name := c.Params("name")
 	//
 	var appConfig tables.AppConfig
-	global.Db.Where(&tables.AppConfig{Name: name}).First(&appConfig)
+	global.Db.Where(&tables.AppConfig{Name: name}).FirstOrCreate(&appConfig, &tables.AppConfig{Name: name, Enabled: true})
 	return res.ResultOK(c, appConfig)
 }
 
@@ -33,7 +33,7 @@ func queryPageConfig(c *fiber.Ctx) error {
 	var appName = c.Params("appName")
 	var name, _ = url.QueryUnescape(c.Params("name"))
 	var petiole tables.PageConfig
-	global.Db.Where(&tables.PageConfig{AppName: appName, Name: name}).First(&petiole)
+	global.Db.Where(&tables.PageConfig{AppName: appName, Name: name}).FirstOrCreate(&petiole, &tables.PageConfig{AppName: appName, Name: name})
 	return res.ResultOK(c, petiole)
 }
 

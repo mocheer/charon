@@ -1,10 +1,8 @@
 package router
 
 import (
-	"fmt"
 	"log"
 	"os"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -99,12 +97,12 @@ func Init() {
 		})
 	}
 
-	filepathNames, err := filepath.Glob(filepath.Join("./public", "*"))
-	if err == nil {
-		for i := range filepathNames {
-			fmt.Println(filepathNames[i]) //打印path
-		}
-	}
+	// filepathNames, err := filepath.Glob(filepath.Join("./public", "*"))
+	// if err == nil {
+	// 	for i := range filepathNames {
+	// 		fmt.Println(filepathNames[i]) //打印path
+	// 	}
+	// }
 
 	// 不支持压缩中间件，所以只能放到这个中间件前面实例化
 	//app.Use("/docs", swagger.Handler) // default

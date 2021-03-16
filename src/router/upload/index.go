@@ -71,7 +71,7 @@ func uploadFolder(c *fiber.Ctx) error {
 			fs.MkdirNotExist(dst)
 			err := c.SaveFile(file, dst)
 			if err != nil {
-				return err
+				return res.ResultError(c, "上传失败", err)
 			}
 		} else {
 			return res.ResultError(c, "上传的文件夹不符合规范", nil)

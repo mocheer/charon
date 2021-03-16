@@ -29,3 +29,7 @@ func ResultOK(c *fiber.Ctx, data interface{}) error {
 func ResultError(c *fiber.Ctx, data string, err error) error {
 	return Result(c, fiber.StatusInternalServerError, data, err)
 }
+
+func ResultImage(c *fiber.Ctx, data interface{}) error {
+	return nil
+}
