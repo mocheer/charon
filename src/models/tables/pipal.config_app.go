@@ -7,7 +7,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// AppConfig 应用配置
+// AppConfig 应用配置 app_config
 type AppConfig struct {
 	Name       string         `json:"name" gorm:"primary_key"`
 	Title      string         `json:"title"`

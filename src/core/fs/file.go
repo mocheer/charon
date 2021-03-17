@@ -38,12 +38,21 @@ func MkdirNotExist(path string) error {
 	return nil
 }
 
-// GetImageFromFilePath 读取图片返回image对象
-func GetImageFromFilePath(filePath string) (image.Image, error) {
-	f, err := os.Open(filePath)
+// GetImageFromPath 读取图片返回image对象
+func GetImageFromPath(path string) (image.Image, error) {
+	f, err := os.Open(path)
 	if err != nil {
 		return nil, err
 	}
 	image, _, err := image.Decode(f)
 	return image, err
+}
+
+// SaveFile 保存图片
+func SaveFile(path string, data []byte) error {
+	file, err := OpenOrCreate(path, os.O_RDWR|os.O_CREATE, os.ModePerm)
+	if err == nil {
+		file.Write(data)
+	}
+	return err
 }

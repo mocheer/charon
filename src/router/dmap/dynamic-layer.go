@@ -24,6 +24,7 @@ type DynamicLayer struct {
 	tile    *types.Tile
 	Options struct {
 		MinZoom int `json:"minZoom"`
+		MaxZoom int `json:"maxZoom"`
 		Feature struct {
 			Src string `json:"src"`
 		}
@@ -90,7 +91,9 @@ func (layer *DynamicLayer) DrawPoint(point *geom.Point) {
 	coor := point.Coords()
 	tilePoint := LonLat2Tile(coor.X(), coor.Y(), float64(layer.tile.Z))
 	offset := tilePoint.Offset
-	if tilePoint.X == layer.tile.X && tilePoint.Y == layer.tile.Y && offset.X >= 0 && offset.Y >= 0 && offset.X <= 256 && offset.Y <= 256 {
+	offset.X += float64(tilePoint.X-layer.tile.X) * 256
+	offset.Y += float64(tilePoint.Y-layer.tile.Y) * 256
+	if offset.X >= -16 && offset.Y >= -16 && offset.X <= (256+16) && offset.Y <= (256+16) {
 		layer.drawImage(layer.Options.Feature.Src, offset.X, offset.Y)
 	}
 	return
@@ -103,14 +106,13 @@ func (layer *DynamicLayer) drawCircle(x float64, y float64, r float64) {
 
 // DrawImage 绘制图片
 func (layer *DynamicLayer) drawImage(path string, x float64, y float64) {
-	image, err := fs.GetImageFromFilePath(filepath.Join("./public", path))
+	image, err := fs.GetImageFromPath(filepath.Join("./public", path))
 
 	if err != nil {
 		logger.Error(err)
 		return
 	}
-	layer.ctx.DrawImage(x-16, 256-(y+16), image, 1)
-	// layer.ctx.DrawPath(x, 256-y, canvas.Circle(5))
+	layer.ctx.DrawImage(x-16, 256-y-16, image, 1)
 }
 
 func (layer *DynamicLayer) getData() []byte {

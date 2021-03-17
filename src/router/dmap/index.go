@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/mocheer/charon/src/core/fs"
 	"github.com/mocheer/charon/src/core/res"
 	"github.com/mocheer/charon/src/models/orm"
 	"github.com/mocheer/charon/src/models/tables"
@@ -18,7 +19,7 @@ import (
 func Use(api fiber.Router) {
 	router := api.Group("/dmap")
 	//
-	router.Get("/image/:id/:z/:y/:x", imageHandle)
+	router.Get("/image/:id/:z/:y/:x", store.GlobalCache, imageHandle)
 	router.Get("/layer/:id", store.GlobalCache, layerHandle)
 	router.Get("/feature/:id", store.GlobalCache, featureHandle)
 	router.Get("/identify/:id", store.GlobalCache, identifyHandle)
@@ -32,15 +33,28 @@ func imageHandle(c *fiber.Ctx) error {
 	zParam := c.Params("z")
 	yParam := c.Params("y")
 	xParam := c.Params("x")
-
+	//
+	path := fmt.Sprintf("./data/dmap/image/%s/%s/%s/%s", idParam, zParam, yParam, xParam)
+	if fs.IsExist(path) {
+		return c.SendFile(path)
+	}
+	//
 	x, _ := strconv.Atoi(xParam)
 	y, _ := strconv.Atoi(yParam)
 	z, _ := strconv.Atoi(zParam)
-
+	//
+	builder := &orm.SelectBuilder{}
+	builder.Name = "layer"
+	builder.Mode = "first"
+	builder.Where = fmt.Sprintf("id=%s", idParam)
+	layerInfo := builder.Query()
+	layer := layerInfo.(*tables.DmapLayer)
+	//
 	dynamicLayer := NewDynamicLayer(&types.Tile{
 		Z: z, Y: y, X: x,
 	})
-
+	dynamicLayer.SetOptions(layer.Options)
+	//
 	if dynamicLayer != nil {
 		builder := &orm.SelectBuilder{}
 		builder.Name = "feature"
@@ -50,21 +64,17 @@ func imageHandle(c *fiber.Ctx) error {
 
 		result := builder.Query()
 		features := result.(*[]tables.DmapFeature)
-		builder = &orm.SelectBuilder{}
-		builder.Name = "layer"
-		builder.Mode = "first"
-		builder.Where = fmt.Sprintf("id=%s", idParam)
-		layerInfo := builder.Query()
-		layer := layerInfo.(*tables.DmapLayer)
-
-		dynamicLayer.SetOptions(layer.Options)
 
 		for _, feature := range *features {
 			dynamicLayer.Draw(feature.Geometry)
 		}
 
 		c.Type("png")
-		return c.Send(dynamicLayer.getData())
+		data := dynamicLayer.getData()
+
+		defer fs.SaveFile(path, data)
+
+		return c.Send(data)
 	}
 
 	return res.ResultError(c, "获取数据错误", nil)
