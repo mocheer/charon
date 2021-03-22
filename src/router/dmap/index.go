@@ -9,6 +9,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/mocheer/charon/src/core/fs"
 	"github.com/mocheer/charon/src/core/res"
+	"github.com/mocheer/charon/src/global"
 	"github.com/mocheer/charon/src/models/orm"
 	"github.com/mocheer/charon/src/models/tables"
 	"github.com/mocheer/charon/src/models/types"
@@ -18,12 +19,12 @@ import (
 // Use 初始化 dmap 路由
 func Use(api fiber.Router) {
 	router := api.Group("/dmap")
-	//
-	router.Get("/image/:id/:z/:y/:x", store.GlobalCache, imageHandle)
+	router.Get("/image/:id/:z", imageHandle)
+	router.Get("/image/:id/:z/:y/:x", imageTileHandle)
 	router.Get("/layer/:id", store.GlobalCache, layerHandle)
 	router.Get("/feature/:id", store.GlobalCache, featureHandle)
+	router.Get("/feature2/:id", store.GlobalCache, featureHandle2)
 	router.Get("/identify/:id", store.GlobalCache, identifyHandle)
-
 }
 
 // imageHandle
@@ -31,14 +32,61 @@ func imageHandle(c *fiber.Ctx) error {
 	//
 	idParam := c.Params("id")
 	zParam := c.Params("z")
+	//
+	id, _ := strconv.Atoi(idParam)
+	z, _ := strconv.Atoi(zParam)
+	//
+	builder := &orm.SelectBuilder{}
+	builder.Name = "layer"
+	builder.Mode = "first"
+	builder.Where = fmt.Sprintf("id=%s", idParam)
+	layerInfo := builder.Query()
+	layer := layerInfo.(*tables.DmapLayer)
+	//
+	dynamicLayer := NewDynamicLayer(id, &types.Tile{
+		Z: z,
+	})
+	dynamicLayer.SetOptions(layer.Options)
+	//
+	if dynamicLayer != nil {
+		builder := &orm.SelectBuilder{}
+		builder.Name = "feature"
+		builder.Mode = "find"
+		builder.Where = fmt.Sprintf("layer_id=%s", idParam)
+
+		result := builder.Query()
+		features := result.(*[]tables.DmapFeature)
+
+		for _, feature := range *features {
+			dynamicLayer.Add(feature.Geometry)
+		}
+		dynamicLayer.Draw()
+		dynamicLayer.SaveTiles().Await()
+		defer dynamicLayer.Reset()
+		if z < 10 {
+			data := dynamicLayer.GetData()
+			return res.ResultPNG(c, data)
+		}
+		return res.ResultOK(c, "预加载中")
+	}
+
+	return res.ResultError(c, "获取数据错误", nil)
+}
+
+// imageHandle
+func imageTileHandle(c *fiber.Ctx) error {
+	//
+	idParam := c.Params("id")
+	zParam := c.Params("z")
 	yParam := c.Params("y")
 	xParam := c.Params("x")
 	//
-	path := fmt.Sprintf("./data/dmap/image/%s/%s/%s/%s", idParam, zParam, yParam, xParam)
+	path := fmt.Sprintf(ImageTilePathFormat, idParam, zParam, yParam, xParam)
 	if fs.IsExist(path) {
 		return c.SendFile(path)
 	}
 	//
+	id, _ := strconv.Atoi(idParam)
 	x, _ := strconv.Atoi(xParam)
 	y, _ := strconv.Atoi(yParam)
 	z, _ := strconv.Atoi(zParam)
@@ -50,7 +98,7 @@ func imageHandle(c *fiber.Ctx) error {
 	layerInfo := builder.Query()
 	layer := layerInfo.(*tables.DmapLayer)
 	//
-	dynamicLayer := NewDynamicLayer(&types.Tile{
+	dynamicLayer := NewDynamicLayer(id, &types.Tile{
 		Z: z, Y: y, X: x,
 	})
 	dynamicLayer.SetOptions(layer.Options)
@@ -60,26 +108,24 @@ func imageHandle(c *fiber.Ctx) error {
 		builder.Name = "feature"
 		builder.Mode = "find"
 		builder.Where = fmt.Sprintf("layer_id=%s", idParam)
-		builder.Select = "layer_id,id,ST_AsGeoJson(geometry,4) as geometry,options,properties"
 
 		result := builder.Query()
 		features := result.(*[]tables.DmapFeature)
 
 		for _, feature := range *features {
-			dynamicLayer.Draw(feature.Geometry)
+			dynamicLayer.Add(feature.Geometry)
 		}
-
-		c.Type("png")
-		data := dynamicLayer.getData()
-
-		defer fs.SaveFile(path, data)
-
-		return c.Send(data)
+		dynamicLayer.Draw()
+		fp, err := dynamicLayer.GetTile(x, y).Await()
+		if err == nil {
+			return c.SendFile(fp.(string))
+		}
 	}
 
 	return res.ResultError(c, "获取数据错误", nil)
 }
 
+// layerHandle
 func layerHandle(c *fiber.Ctx) error {
 	idParam := c.Params("id")
 	builder := &orm.SelectBuilder{}
@@ -88,11 +134,24 @@ func layerHandle(c *fiber.Ctx) error {
 	builder.Where = fmt.Sprintf("id=%s", idParam)
 	builder.Select = "crs,extent,id,name,options,type,properties,array_to_json(array(select row_to_json(e) from (select * from pipal.dmap_layer where parent_id = 1)e)) as items"
 	result := builder.Query()
-
+	//
 	return res.ResultOK(c, result)
 }
 
+// featureHandle 要素服务
 func featureHandle(c *fiber.Ctx) error {
+	result := &[]types.GeoFeature{}
+	global.Db.Raw(`select row.geojson->>'type' as type , row.geojson->'coordinates' as coordinates , row.properties from (select st_asgeojson(geometry,4)::jsonb as geojson,properties from pipal.dmap_feature where layer_id = ?)row `, c.Params("id")).Scan(result)
+	//
+	return res.ResultOK(c, &map[string]interface{}{
+		"type":       "GeometryCollection",
+		"geometries": result,
+		"properties": struct{}{},
+	})
+}
+
+// featureHandle2 要素服务
+func featureHandle2(c *fiber.Ctx) error {
 	id := c.Params("id")
 	builder := &orm.SelectBuilder{}
 	err := c.QueryParser(builder)
@@ -103,7 +162,6 @@ func featureHandle(c *fiber.Ctx) error {
 	builder.Mode = "find"
 
 	if builder.Where != "" {
-
 		var whereMap map[string]interface{}
 		err := json.Unmarshal([]byte(builder.Where), &whereMap)
 		if err == nil {
@@ -120,11 +178,11 @@ func featureHandle(c *fiber.Ctx) error {
 		builder.Where = fmt.Sprintf("layer_id=%s", id)
 	}
 
-	builder.Select = "layer_id,id,ST_AsGeoJson(geometry,4) as geometry,options,properties"
 	result := builder.Query()
 	return res.ResultOK(c, result)
 }
 
+// identifyHandle
 func identifyHandle(c *fiber.Ctx) error {
 	return nil
 }

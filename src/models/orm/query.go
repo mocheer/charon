@@ -21,17 +21,17 @@ type SelectBuilder struct {
 	Offset int    `query:"offset"` // 偏移位置
 	Order  string `query:"order"`  // 排序
 	// 私有属性
-	model  *gorm.DB
+	tx     *gorm.DB
 	entity models.IEntity
 }
 
 // Model 设置模型
 func (builder *SelectBuilder) Model() *gorm.DB {
-	if builder.model == nil && builder.Name != "" {
+	if builder.tx == nil && builder.Name != "" {
 		builder.entity = models.NewTableStruct(builder.Name)
-		builder.model = global.Db.Model(builder.entity)
+		builder.tx = global.Db.Model(builder.entity)
 	}
-	return builder.model
+	return builder.tx
 }
 
 // Query 执行查询

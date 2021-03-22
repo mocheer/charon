@@ -1,14 +1,17 @@
 package tables
 
-import "gorm.io/datatypes"
+import (
+	"github.com/mocheer/charon/src/models/ormtypes"
+	"gorm.io/datatypes"
+)
 
 // DmapFeature 应用配置
 type DmapFeature struct {
-	LayerID    int            `json:"layer_id"`
-	ID         int            `json:"id"`
-	Geometry   datatypes.JSON `json:"geometry"`
-	Options    datatypes.JSON `json:"options"`
-	Properties datatypes.JSON `json:"properties"`
+	LayerID    int               `json:"layer_id"`
+	ID         int               `json:"id"`
+	Geometry   ormtypes.Geometry `json:"geometry"`
+	Options    datatypes.JSON    `json:"options"`
+	Properties datatypes.JSON    `json:"properties"`
 }
 
 // TableName 设置表名

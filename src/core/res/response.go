@@ -30,6 +30,7 @@ func ResultError(c *fiber.Ctx, data string, err error) error {
 	return Result(c, fiber.StatusInternalServerError, data, err)
 }
 
-func ResultImage(c *fiber.Ctx, data interface{}) error {
-	return nil
+// ResultPNG 返回图片信息
+func ResultPNG(c *fiber.Ctx, data []byte) error {
+	return c.Type("png").Send(data)
 }

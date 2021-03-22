@@ -23,6 +23,12 @@ func OpenOrCreate(name string, flag int, perm os.FileMode) (*os.File, error) {
 		}
 		return nil, err
 	}
+	// if flag == 0 {
+	// 	flag = os.O_CREATE | os.O_WRONLY
+	// }
+	// if perm == 0 {
+	// 	perm = 0666
+	// }
 	return os.OpenFile(name, flag, perm)
 }
 
@@ -50,9 +56,10 @@ func GetImageFromPath(path string) (image.Image, error) {
 
 // SaveFile 保存图片
 func SaveFile(path string, data []byte) error {
-	file, err := OpenOrCreate(path, os.O_RDWR|os.O_CREATE, os.ModePerm)
+	f, err := OpenOrCreate(path, os.O_RDWR|os.O_CREATE, os.ModePerm)
 	if err == nil {
-		file.Write(data)
+		f.Write(data)
 	}
+	defer f.Close()
 	return err
 }

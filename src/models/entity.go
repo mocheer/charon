@@ -9,6 +9,12 @@ type IEntity interface {
 
 type Entity struct{}
 
-func (e *Entity) toMap() (map[string]interface{}, error) {
+// 转成 map[string]interface
+func (e *Entity) ToMap() (map[string]interface{}, error) {
 	return fn.StructToMap(e, "map", "")
+}
+
+// 重置结构体
+func (e *Entity) Reset() {
+	*e = Entity{}
 }
