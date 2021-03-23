@@ -1,6 +1,8 @@
 package main
 
 import (
+	_ "net/http/pprof"
+
 	"github.com/mocheer/charon/src/core/db"
 	"github.com/mocheer/charon/src/global"
 	"github.com/mocheer/charon/src/logger"
@@ -22,4 +24,5 @@ func main() {
 	router.Init()
 	//
 	logger.Info("启动成功")
+
 }

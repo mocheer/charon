@@ -3,6 +3,7 @@ package dmap
 import (
 	"encoding/json"
 	"fmt"
+	"runtime/debug"
 	"strconv"
 	"strings"
 
@@ -61,12 +62,13 @@ func imageHandle(c *fiber.Ctx) error {
 			dynamicLayer.Add(feature.Geometry)
 		}
 		dynamicLayer.Draw()
-		dynamicLayer.SaveTiles().Await()
-		defer dynamicLayer.Reset()
-		if z < 10 {
+		dynamicLayer.SaveTiles().Wait()
+		if dynamicLayer.NumTile < 32 {
 			data := dynamicLayer.GetData()
 			return res.ResultPNG(c, data)
 		}
+		// GC 垃圾回收太慢，需要手动释放
+		debug.FreeOSMemory()
 		return res.ResultOK(c, "预加载中")
 	}
 
@@ -116,10 +118,10 @@ func imageTileHandle(c *fiber.Ctx) error {
 			dynamicLayer.Add(feature.Geometry)
 		}
 		dynamicLayer.Draw()
-		fp, err := dynamicLayer.GetTile(x, y).Await()
-		if err == nil {
-			return c.SendFile(fp.(string))
-		}
+		fp := dynamicLayer.GetTile(x, y)
+		// GC 垃圾回收太慢，需要手动释放
+		debug.FreeOSMemory()
+		return c.SendFile(fp)
 	}
 
 	return res.ResultError(c, "获取数据错误", nil)
@@ -140,8 +142,9 @@ func layerHandle(c *fiber.Ctx) error {
 
 // featureHandle 要素服务
 func featureHandle(c *fiber.Ctx) error {
+	idParam := c.Params("id")
 	result := &[]types.GeoFeature{}
-	global.Db.Raw(`select row.geojson->>'type' as type , row.geojson->'coordinates' as coordinates , row.properties from (select st_asgeojson(geometry,4)::jsonb as geojson,properties from pipal.dmap_feature where layer_id = ?)row `, c.Params("id")).Scan(result)
+	global.Db.Raw(`select row.geojson->>'type' as type , row.geojson->'coordinates' as coordinates , row.properties from (select st_asgeojson(geometry,4)::jsonb as geojson,properties from pipal.dmap_feature where layer_id = ?)row `, idParam).Scan(result)
 	//
 	return res.ResultOK(c, &map[string]interface{}{
 		"type":       "GeometryCollection",

@@ -9,8 +9,10 @@ import (
 	"image/png"
 	"os"
 	"path/filepath"
+	"runtime/debug"
+	"sync"
 
-	"github.com/chebyrash/promise"
+	"github.com/mocheer/charon/src/core/fn"
 	"github.com/mocheer/charon/src/core/fs"
 	"github.com/mocheer/charon/src/logger"
 	"github.com/mocheer/charon/src/models/types"
@@ -31,6 +33,7 @@ type DynamicLayer struct {
 	maxTile  *types.Tile
 	numTileX int
 	numTileY int
+	NumTile  int
 	data     *geom.GeometryCollection
 	//
 	Options struct {
@@ -51,13 +54,6 @@ func NewDynamicLayer(id int, tile *types.Tile) *DynamicLayer {
 		minTile: tile,
 		data:    data,
 	}
-}
-
-// Reset 为什么gc没有自动回收?
-func (layer *DynamicLayer) Reset() {
-	layer.canvas = nil
-	layer.ctx = nil
-	layer.data = nil
 }
 
 // SetOptions
@@ -135,6 +131,8 @@ func (layer *DynamicLayer) Draw() (err error) {
 	numTileY := maxTilePoint.Y - minTilePoint.Y + 1
 	layer.numTileX = numTileX
 	layer.numTileY = numTileY
+	layer.NumTile = numTileX * numTileY
+
 	//
 	layer.minTile = &types.Tile{X: minTilePoint.X, Y: minTilePoint.Y, Z: minTilePoint.Z}
 	layer.maxTile = &types.Tile{X: maxTilePoint.X, Y: maxTilePoint.Y, Z: maxTilePoint.Z}
@@ -249,43 +247,47 @@ func (layer *DynamicLayer) GetData() []byte {
 	return buf.Bytes()
 }
 
-func (layer *DynamicLayer) saveTile(img *image.RGBA, i, j int) *promise.Promise {
-	return promise.New(func(resolve func(promise.Any), reject func(error)) {
-		minTile := layer.minTile
-		imgTilePath := fmt.Sprintf(ImageTilePathFormat, layer.id, minTile.Z, j, i)
-		//
-		if fs.IsExist(imgTilePath) {
-			resolve(imgTilePath)
-			return
-		}
-		//
+// savingTile
+func (layer *DynamicLayer) savingTile(img *image.RGBA, i, j int) string {
+	minTile := layer.minTile
+	imgTilePath := fmt.Sprintf(ImageTilePathFormat, layer.id, minTile.Z, j, i)
+	if !fs.IsExist(imgTilePath) {
 		x0 := (i - minTile.X) * 256
 		y0 := (j - minTile.Y) * 256
 		subImg := img.SubImage(image.Rect(x0, y0, x0+256, y0+256))
 		f, _ := fs.OpenOrCreate(imgTilePath, os.O_CREATE|os.O_WRONLY, 0666)
-		defer f.Close()
 		png.Encode(f, subImg)
-		resolve(imgTilePath)
-	})
+		f.Close()
+	}
+	// GC 太慢了
+	debug.FreeOSMemory()
+	return imgTilePath
 }
 
 // SaveTiles
-func (layer *DynamicLayer) SaveTiles() *promise.Promise {
+func (layer *DynamicLayer) SaveTiles() *sync.WaitGroup {
 	img := rasterizer.Draw(layer.canvas, 1)
 	minTile := layer.minTile
 	maxTile := layer.maxTile
-	tasks := []*promise.Promise{}
-	for i := minTile.X; i <= maxTile.X; i++ {
-		for j := minTile.Y; j <= maxTile.Y; j++ {
-			p := layer.saveTile(img, i, j)
-			tasks = append(tasks, p)
+
+	tasks := make([]func(), layer.NumTile)
+	createTask := func(img *image.RGBA, i, j int) func() {
+		return func() {
+			layer.savingTile(img, i, j)
 		}
 	}
-	return promise.All(tasks...)
+	count := 0
+	for i := minTile.X; i <= maxTile.X; i++ {
+		for j := minTile.Y; j <= maxTile.Y; j++ {
+			tasks[count] = createTask(img, i, j)
+			count++
+		}
+	}
+	return fn.GoFns(6, tasks)
 }
 
 // SaveTiles
-func (layer *DynamicLayer) GetTile(i, j int) *promise.Promise {
+func (layer *DynamicLayer) GetTile(i, j int) string {
 	img := rasterizer.Draw(layer.canvas, 1)
-	return layer.saveTile(img, i, j)
+	return layer.savingTile(img, i, j)
 }
