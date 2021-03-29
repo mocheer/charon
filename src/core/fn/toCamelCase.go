@@ -5,8 +5,9 @@ import (
 	"strings"
 )
 
-// toCamelCase
-func toCamelCase(val string) string {
+// ToCamelCase
+// fn.ToCamelCase("camel-case") == "camelCase"
+func ToCamelCase(val string) string {
 	r, _ := regexp.Compile("-+(.)?")
 	return r.ReplaceAllStringFunc(val, strings.ToUpper)
 }

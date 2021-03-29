@@ -9,7 +9,6 @@ import (
 	"image/png"
 	"os"
 	"path/filepath"
-	"runtime/debug"
 	"sync"
 
 	"github.com/mocheer/charon/src/core/fn"
@@ -259,8 +258,6 @@ func (layer *DynamicLayer) savingTile(img *image.RGBA, i, j int) string {
 		png.Encode(f, subImg)
 		f.Close()
 	}
-	// GC 太慢了
-	debug.FreeOSMemory()
 	return imgTilePath
 }
 
@@ -283,7 +280,8 @@ func (layer *DynamicLayer) SaveTiles() *sync.WaitGroup {
 			count++
 		}
 	}
-	return fn.GoFns(6, tasks)
+	// 并发执行
+	return fn.GoFns(16, tasks)
 }
 
 // SaveTiles
