@@ -39,7 +39,8 @@ type DynamicLayer struct {
 		MinZoom int `json:"minZoom"`
 		MaxZoom int `json:"maxZoom"`
 		Feature struct {
-			Src string `json:"src"`
+			Src    string `json:"src"`
+			Radius int    `json:"radius"`
 		}
 	}
 }
@@ -60,13 +61,13 @@ func (layer *DynamicLayer) SetOptions(options interface{}) {
 	json.Unmarshal(options.(datatypes.JSON), &layer.Options)
 }
 
-// SetOptions
+// Add
 func (layer *DynamicLayer) Add(data []byte) (err error) {
 	var g geom.T
 	geojson.Unmarshal(data, &g)
-	switch g.(type) {
+	switch g := g.(type) {
 	case *geom.GeometryCollection:
-		for _, gi := range g.(*geom.GeometryCollection).Geoms() {
+		for _, gi := range g.Geoms() {
 			layer.data.Push(gi)
 		}
 	default:
@@ -82,11 +83,11 @@ func (layer *DynamicLayer) DrawTile() (err error) {
 	layer.ctx = canvas.NewContext(layer.canvas)
 
 	for _, g := range layer.data.Geoms() {
-		switch g.(type) {
+		switch g := g.(type) {
 		case *geom.Point:
-			layer.drawPoint(g.(*geom.Point))
+			layer.drawPoint(g)
 		case *geom.LineString:
-			layer.drawPolyline(g.(*geom.LineString))
+			layer.drawPolyline(g)
 		case *geom.LinearRing:
 		case *geom.MultiLineString:
 		case *geom.MultiPoint:
@@ -108,7 +109,7 @@ func (layer *DynamicLayer) Draw() (err error) {
 	//
 	minTilePoint := LonLat2TilePoint(minLon, maxLat, float64(layer.tile.Z)) //左上瓦片
 	maxTilePoint := LonLat2TilePoint(maxLon, minLat, float64(layer.tile.Z)) //右下瓦片
-
+	//
 	if minTilePoint.Offset.X < 16 {
 		minTilePoint.X -= 1
 	}
@@ -131,7 +132,6 @@ func (layer *DynamicLayer) Draw() (err error) {
 	layer.numTileX = numTileX
 	layer.numTileY = numTileY
 	layer.NumTile = numTileX * numTileY
-
 	//
 	layer.minTile = &types.Tile{X: minTilePoint.X, Y: minTilePoint.Y, Z: minTilePoint.Z}
 	layer.maxTile = &types.Tile{X: maxTilePoint.X, Y: maxTilePoint.Y, Z: maxTilePoint.Z}
@@ -140,14 +140,14 @@ func (layer *DynamicLayer) Draw() (err error) {
 	layer.ctx = canvas.NewContext(layer.canvas)
 
 	for _, g := range layer.data.Geoms() {
-		switch g.(type) {
+		switch g := g.(type) {
 		case *geom.Point:
-			layer.drawPoint(g.(*geom.Point))
+			layer.drawPoint(g)
 		case *geom.LineString:
-			layer.drawPolyline(g.(*geom.LineString))
+			layer.drawPolyline(g)
 		case *geom.LinearRing:
 		case *geom.Polygon:
-			layer.drawPolygon(g.(*geom.Polygon))
+			layer.drawPolygon(g)
 		case *geom.MultiLineString:
 		case *geom.MultiPoint:
 		case *geom.MultiPolygon:
@@ -173,10 +173,17 @@ func (layer *DynamicLayer) drawPoint(p *geom.Point) {
 	offset := layer.Coor2Pixel(p.Coords())
 
 	//
-	tolerance := 16.0 // 图片大小的一半
-	if offset.X >= -tolerance && offset.Y >= -tolerance && offset.X <= (layer.canvas.W+tolerance) && offset.Y <= (layer.canvas.H+tolerance) {
-		layer.drawImage(layer.Options.Feature.Src, offset.X, offset.Y)
+
+	switch layer.Options.Feature.Src {
+	case "circle":
+		layer.drawCircle(offset.X, offset.Y, float64(layer.Options.Feature.Radius))
+	default:
+		tolerance := 16.0 // 图片大小的一半
+		if offset.X >= -tolerance && offset.Y >= -tolerance && offset.X <= (layer.canvas.W+tolerance) && offset.Y <= (layer.canvas.H+tolerance) {
+			layer.drawImage(layer.Options.Feature.Src, offset.X, offset.Y)
+		}
 	}
+
 }
 
 // drawPolyline

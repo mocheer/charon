@@ -1,6 +1,7 @@
 package store
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -39,6 +40,16 @@ func NewCache(exp time.Duration) func(*fiber.Ctx) error {
 		},
 	})
 }
+
+// NewCacheControl
+func NewCacheControl(maxAge int) func(*fiber.Ctx) error {
+	return func(c *fiber.Ctx) error {
+		c.Set(fiber.HeaderCacheControl, fmt.Sprintf("public, max-age=%d", maxAge))
+		return nil
+	}
+}
+
+var GlobalCacheControl = NewCacheControl(31536000)
 
 // GlobalCache 全局缓存
 var GlobalCache = NewCache(time.Hour * 24)
