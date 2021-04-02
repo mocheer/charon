@@ -69,7 +69,7 @@ func imageHandle(c *fiber.Ctx) error {
 		}
 		// GC 垃圾回收太慢，需要手动释放
 		debug.FreeOSMemory()
-		return res.ResultOK(c, "预加载中")
+		return res.ResultOK(c, true)
 	}
 
 	return res.ResultError(c, "获取数据错误", nil)
@@ -120,7 +120,7 @@ func imageTileHandle(c *fiber.Ctx) error {
 		dynamicLayer.Draw()
 		fp := dynamicLayer.GetTile(x, y)
 		// GC 垃圾回收太慢，需要手动释放
-		debug.FreeOSMemory()
+		// debug.FreeOSMemory()
 		return c.SendFile(fp)
 	}
 

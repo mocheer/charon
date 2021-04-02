@@ -23,12 +23,6 @@ func OpenOrCreate(name string, flag int, perm os.FileMode) (*os.File, error) {
 		}
 		return nil, err
 	}
-	// if flag == 0 {
-	// 	flag = os.O_CREATE | os.O_WRONLY
-	// }
-	// if perm == 0 {
-	// 	perm = 0666
-	// }
 	return os.OpenFile(name, flag, perm)
 }
 

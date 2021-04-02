@@ -61,7 +61,7 @@ func (layer *DynamicLayer) SetOptions(options interface{}) {
 	json.Unmarshal(options.(datatypes.JSON), &layer.Options)
 }
 
-// Add
+// Add 添加数据
 func (layer *DynamicLayer) Add(data []byte) (err error) {
 	var g geom.T
 	geojson.Unmarshal(data, &g)
@@ -76,26 +76,18 @@ func (layer *DynamicLayer) Add(data []byte) (err error) {
 	return
 }
 
-// DrawTile 绘制单张瓦片
+// DrawTile 绘制单张瓦片 => 只支持点图层，因为线和面边界稍复杂
 func (layer *DynamicLayer) DrawTile() (err error) {
 
 	layer.canvas = canvas.New(256, 256)
 	layer.ctx = canvas.NewContext(layer.canvas)
-
+	//
 	for _, g := range layer.data.Geoms() {
 		switch g := g.(type) {
 		case *geom.Point:
 			layer.drawPoint(g)
-		case *geom.LineString:
-			layer.drawPolyline(g)
-		case *geom.LinearRing:
-		case *geom.MultiLineString:
-		case *geom.MultiPoint:
-		case *geom.MultiPolygon:
-		case *geom.Polygon:
 		}
 	}
-
 	return
 }
 
@@ -171,10 +163,9 @@ func (layer *DynamicLayer) Coor2Pixel(coor geom.Coord) *types.Point {
 // drawPoint
 func (layer *DynamicLayer) drawPoint(p *geom.Point) {
 	offset := layer.Coor2Pixel(p.Coords())
-
 	//
-
 	switch layer.Options.Feature.Src {
+	case "rect":
 	case "circle":
 		layer.drawCircle(offset.X, offset.Y, float64(layer.Options.Feature.Radius))
 	default:
@@ -183,7 +174,6 @@ func (layer *DynamicLayer) drawPoint(p *geom.Point) {
 			layer.drawImage(layer.Options.Feature.Src, offset.X, offset.Y)
 		}
 	}
-
 }
 
 // drawPolyline
@@ -209,10 +199,13 @@ func (layer *DynamicLayer) drawPolyline(line *geom.LineString) {
 func (layer *DynamicLayer) drawPolygon(polygon *geom.Polygon) {
 	coors2 := polygon.Coords()
 	p := &canvas.Path{}
-	//
-	layer.ctx.StrokeWidth = 1
+	// 边框大小
+	layer.ctx.SetStrokeWidth(1)
+	// 边框颜色
 	layer.ctx.SetStrokeColor(color.RGBA{0, 0, 255, 255})
+	// 填充颜色
 	layer.ctx.SetFillColor(color.RGBA{255, 0, 0, 100})
+	//
 	for _, coors := range coors2 {
 		for j, coor := range coors {
 			offset := layer.Coor2Pixel(coor)
@@ -243,7 +236,7 @@ func (layer *DynamicLayer) drawImage(path string, x float64, y float64) {
 	layer.ctx.DrawImage(x-16, y-16, image, 1)
 }
 
-// GetData
+// GetData 获取画布数据
 func (layer *DynamicLayer) GetData() []byte {
 	image := rasterizer.Draw(layer.canvas, 1)
 	buf := new(bytes.Buffer)
@@ -253,7 +246,7 @@ func (layer *DynamicLayer) GetData() []byte {
 	return buf.Bytes()
 }
 
-// savingTile
+// savingTile 保存瓦片
 func (layer *DynamicLayer) savingTile(img *image.RGBA, i, j int) string {
 	minTile := layer.minTile
 	imgTilePath := fmt.Sprintf(ImageTilePathFormat, layer.id, minTile.Z, j, i)
@@ -268,7 +261,7 @@ func (layer *DynamicLayer) savingTile(img *image.RGBA, i, j int) string {
 	return imgTilePath
 }
 
-// SaveTiles
+// SaveTiles 保存瓦片
 func (layer *DynamicLayer) SaveTiles() *sync.WaitGroup {
 	img := rasterizer.Draw(layer.canvas, 1)
 	minTile := layer.minTile
@@ -291,7 +284,7 @@ func (layer *DynamicLayer) SaveTiles() *sync.WaitGroup {
 	return fn.GoFns(16, tasks)
 }
 
-// SaveTiles
+// GetTile
 func (layer *DynamicLayer) GetTile(i, j int) string {
 	img := rasterizer.Draw(layer.canvas, 1)
 	return layer.savingTile(img, i, j)
