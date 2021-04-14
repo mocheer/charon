@@ -1,6 +1,6 @@
 package global
 
-import "github.com/mocheer/charon/src/core/fs"
+import "github.com/mocheer/pluto/fs"
 
 type staticConfig struct {
 	// 前端资源路由名称

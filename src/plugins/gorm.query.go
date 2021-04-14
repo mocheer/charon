@@ -3,7 +3,7 @@ package plugins
 import (
 	"encoding/json"
 
-	"github.com/mocheer/charon/src/core/fn"
+	"github.com/mocheer/pluto/fn"
 	"gorm.io/gorm"
 )
 

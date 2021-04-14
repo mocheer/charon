@@ -8,13 +8,15 @@ import (
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/mocheer/charon/src/core/fs"
+
 	"github.com/mocheer/charon/src/core/res"
 	"github.com/mocheer/charon/src/global"
 	"github.com/mocheer/charon/src/models/orm"
 	"github.com/mocheer/charon/src/models/tables"
 	"github.com/mocheer/charon/src/models/types"
 	"github.com/mocheer/charon/src/router/store"
+	"github.com/mocheer/pluto/fs"
+	"github.com/mocheer/pluto/tm"
 )
 
 // Use 初始化 dmap 路由
@@ -62,12 +64,13 @@ func imageHandle(c *fiber.Ctx) error {
 			dynamicLayer.Add(feature.Geometry)
 		}
 		dynamicLayer.Draw()
+		cancelInterval := tm.SetInterval(debug.FreeOSMemory, 60)
+		defer cancelInterval()
 		dynamicLayer.SaveTiles().Wait()
 		if dynamicLayer.NumTile < 32 {
 			data := dynamicLayer.GetData()
 			return res.ResultPNG(c, data)
 		}
-		// GC 垃圾回收太慢，需要手动释放
 		debug.FreeOSMemory()
 		return res.ResultOK(c, true)
 	}
@@ -120,7 +123,7 @@ func imageTileHandle(c *fiber.Ctx) error {
 		dynamicLayer.Draw()
 		fp := dynamicLayer.GetTile(x, y)
 		// GC 垃圾回收太慢，需要手动释放
-		// debug.FreeOSMemory()
+		debug.FreeOSMemory()
 		return c.SendFile(fp)
 	}
 

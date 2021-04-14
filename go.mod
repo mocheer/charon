@@ -14,6 +14,7 @@ require (
 	github.com/klauspost/compress v1.11.13 // indirect
 	github.com/lib/pq v1.10.0 // indirect
 	github.com/mattn/go-sqlite3 v1.14.6 // indirect
+	github.com/mocheer/pluto v0.0.0-20210414123345-67dbf8f9bf25 // indirect
 	github.com/shopspring/decimal v1.2.0 // indirect
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0 // indirect

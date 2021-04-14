@@ -11,10 +11,10 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/mocheer/charon/src/core/fn"
-	"github.com/mocheer/charon/src/core/fs"
 	"github.com/mocheer/charon/src/logger"
 	"github.com/mocheer/charon/src/models/types"
+	"github.com/mocheer/pluto/fn"
+	"github.com/mocheer/pluto/fs"
 	"github.com/tdewolff/canvas"
 	"github.com/tdewolff/canvas/rasterizer"
 	"github.com/twpayne/go-geom"

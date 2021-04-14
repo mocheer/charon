@@ -5,9 +5,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/mocheer/charon/src/core/clock"
-	"github.com/mocheer/charon/src/core/fs"
-	"github.com/mocheer/charon/src/core/tm"
+	"github.com/mocheer/pluto/clock"
+	"github.com/mocheer/pluto/fs"
+	"github.com/mocheer/pluto/tm"
 	"github.com/sirupsen/logrus"
 )
 
