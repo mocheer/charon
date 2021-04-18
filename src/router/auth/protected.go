@@ -4,7 +4,7 @@ import (
 	jwt "github.com/form3tech-oss/jwt-go"
 	"github.com/gofiber/fiber/v2"
 	jwtware "github.com/gofiber/jwt/v2"
-	"github.com/mocheer/charon/src/core/res"
+	"github.com/mocheer/charon/src/res"
 )
 
 // Protected protect routes

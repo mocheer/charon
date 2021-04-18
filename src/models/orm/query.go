@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"strings"
 
-	"github.com/mocheer/charon/src/core/db"
+	"github.com/mocheer/charon/src/db"
 	"github.com/mocheer/charon/src/global"
 	"github.com/mocheer/charon/src/models"
 	"gorm.io/gorm"

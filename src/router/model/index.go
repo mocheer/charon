@@ -5,10 +5,10 @@ import (
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/mocheer/charon/src/core/db"
-	"github.com/mocheer/charon/src/core/res"
+	"github.com/mocheer/charon/src/db"
 	"github.com/mocheer/charon/src/global"
 	"github.com/mocheer/charon/src/models"
+	"github.com/mocheer/charon/src/res"
 )
 
 // Use 初始化 pipal 路由

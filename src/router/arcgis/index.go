@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/mocheer/charon/src/core/res"
 	"github.com/mocheer/charon/src/models/types"
+	"github.com/mocheer/charon/src/res"
 	"github.com/mocheer/charon/src/router/store"
 )
 

@@ -3,7 +3,7 @@ package main
 import (
 	_ "net/http/pprof"
 
-	"github.com/mocheer/charon/src/core/db"
+	"github.com/mocheer/charon/src/db"
 	"github.com/mocheer/charon/src/global"
 	"github.com/mocheer/charon/src/logger"
 	"github.com/mocheer/charon/src/router"

@@ -60,7 +60,7 @@ func (server *TileServer) ReadCompactTile(tile types.Tile) ([]byte, error) {
 	}
 	defer bundlx.Close()
 	bundlx.Seek((16 + (5 * imgDataIndex)), io.SeekStart)
-	bOffset := make([]byte, 5, 5)
+	bOffset := make([]byte, 5)
 	bundlx.Read(bOffset)
 	offset := int64(binary.LittleEndian.Uint64(bOffset))
 	bundle, err := os.Open(bundlePath)
@@ -69,10 +69,10 @@ func (server *TileServer) ReadCompactTile(tile types.Tile) ([]byte, error) {
 	}
 	defer bundle.Close()
 	bundle.Seek(offset, io.SeekStart)
-	bLength := make([]byte, 4, 4)
+	bLength := make([]byte, 4)
 	bundle.Read(bLength)
 	length := binary.LittleEndian.Uint64(bLength)
-	imgBytes := make([]byte, length, length)
+	imgBytes := make([]byte, length)
 	bundle.Read(imgBytes)
 	return imgBytes, nil
 }
@@ -105,7 +105,7 @@ func (server *TileServer) ReadCompactTileV2(tile types.Tile) ([]byte, error) {
 	dataOffset := binary.LittleEndian.Uint64(offsetBytes)
 	size := binary.LittleEndian.Uint32(sizeBytes)
 
-	imgBytes := make([]byte, size, size)
+	imgBytes := make([]byte, size)
 	bundle.Seek(int64(dataOffset), io.SeekStart)
 	bundle.Read(imgBytes)
 

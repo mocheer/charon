@@ -1,9 +1,9 @@
 package db
 
 import (
-	"fmt"
 	"time"
 
+	"github.com/mocheer/charon/src/logger"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -12,11 +12,11 @@ import (
 func Open(dsn string) *gorm.DB {
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{AllowGlobalUpdate: false})
 	if err != nil {
-		fmt.Println("数据库连接失败")
+		logger.Error("数据库连接失败")
 	}
 	sqlDB, err := db.DB()
 	if err != nil {
-		fmt.Println("数据库连接失败")
+		logger.Error("数据库连接失败", err)
 	}
 	// SetMaxIdleConns 设置空闲连接池中连接的最大数量
 	sqlDB.SetMaxIdleConns(8)
