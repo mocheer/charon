@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/mocheer/charon/src/models/types"
+	"github.com/mocheer/pluto/ts"
 )
 
 // NewTileServer 根据config.xml实例化服务
@@ -19,7 +20,7 @@ func NewTileServer(confPath string) (*TileServer, error) {
 	if err != nil {
 		return nil, err
 	}
-	var config TileLayerConfig
+	var config ts.ArcgisTileLayerConfig
 	err = xml.Unmarshal(confXML, &config)
 	if err != nil {
 		return nil, err

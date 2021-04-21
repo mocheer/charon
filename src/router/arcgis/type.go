@@ -13,26 +13,3 @@ type TileServer struct {
 	RowsPerFile   int    //
 	WKID          int    // 切片服务wkid
 }
-
-// TileLayerConfig corresponds to an ESRI conf.xml document
-type TileLayerConfig struct {
-	TileCacheInfo struct {
-		LODInfos struct {
-			LODInfo []struct {
-				LevelID int
-			}
-		}
-		SpatialReference struct {
-			WKID int
-		}
-		TileCols int
-		TileRows int
-	}
-	TileImageInfo struct {
-		CacheTileFormat string
-	}
-	CacheStorageInfo struct {
-		StorageFormat string
-		PacketSize    *int
-	}
-}
