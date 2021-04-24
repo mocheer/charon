@@ -1,18 +1,19 @@
 package global
 
-import "github.com/mocheer/pluto/fs"
-
-type staticConfig struct {
-	// 前端资源路由名称
+// StaticConfig 静态资源配置
+type StaticConfig struct {
+	// 名称，暂定，可根据名称，查找到静态资源的相关信息
 	Name string
-	// 前端资源路由模式
+	// 路由前缀
+	Prefix string
+	// 路由模式 history | hash
 	Mode string
-	// 静态资源目录
+	// 静态资源根目录
 	Dir string
 }
 
-// appConfig 应用配置
-type appConfig struct {
+// AppConfig 应用配置
+type AppConfig struct {
 	// 名称
 	Name string
 	// 应用服务信息
@@ -22,12 +23,7 @@ type appConfig struct {
 	// 监听端口
 	Port string
 	// 静态资源服务
-	Static map[string]staticConfig
-	// 数据库连接串
+	Static map[string]StaticConfig
+	// 数据源：数据库连接串
 	DbDSN string
-}
-
-// ReadJSON 从json文件中读取配置数据
-func (e *appConfig) ReadJSON(path string) error {
-	return fs.ReadJSON(path, e)
 }

@@ -8,11 +8,11 @@ import (
 var Db *gorm.DB
 
 // Config 全局配置
-var Config = &appConfig{
+var Config = &AppConfig{
 	Name: "charon",
 	Mode: "production",
 	Port: ":9212",
-	Static: map[string]staticConfig{
+	Static: map[string]StaticConfig{
 		"/": {
 			Mode: "history",
 			Dir:  "./public",

@@ -95,8 +95,8 @@ func Init() {
 		app.Static(name, config.Dir, fiber.Static{
 			Compress:  true,       //
 			ByteRange: true,       //
-			Browse:    false,      //是否访问目录时列出文件列表
-			MaxAge:    86400 * 30, //缓存时间，单位秒，86400s = 1day
+			Browse:    false,      // 是否访问目录时列出文件列表
+			MaxAge:    86400 * 30, // 缓存时间，单位秒，86400s = 1day
 			Index:     "index.html",
 		})
 	}
