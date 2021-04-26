@@ -8,8 +8,8 @@ import (
 // Use
 func Use(api fiber.Router) {
 	router := api.Group("proxy")
-
-	router.Use(proxy.Balancer(proxy.Config{
+	tdt := router.Group("tdt")
+	tdt.Use(proxy.Balancer(proxy.Config{
 		Servers: []string{
 			"http://t0.tianditu.gov.cn/",
 		},

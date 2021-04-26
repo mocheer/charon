@@ -1,9 +1,12 @@
 {
+  "name":"charon",
   "scripts":{
     "build":"go build -ldflags \"-s -w\"",
-    "install":"./tools/nssm.exe install charon D:/code-space/go/charon/charon.exe",
-    "start":"./tools/nssm.exe start charon",
-    "stop":"./tools/nssm.exe stop charon",
-    "remove":"./tools/nssm.exe remove charon"
+    "install":"./tools/nssm.exe install {appName} {execPath}/charon.exe",
+    "start":"./tools/nssm.exe start {appName}",
+    "stop":"./tools/nssm.exe stop {appName}",
+    "remove":"./tools/nssm.exe remove {appName}",
+    "setup":"nix run install && nix run start",
+    "unsetup":"nix run stop && nix run remove"
   }
 }

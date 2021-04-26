@@ -16,10 +16,10 @@ func Use(api fiber.Router) {
 	router := api.Group("/auth")
 	router.Post("/login", login)
 	router.Post("/signup", signup)
-	router.Get("/info", GlobalProtected, restricted)
+	router.Get("/info", GlobalProtected, getUserInfo)
 }
 
-// login
+// login 登录
 func login(c *fiber.Ctx) error {
 
 	var input LoginInput
@@ -47,7 +47,7 @@ func login(c *fiber.Ctx) error {
 	claims["role"] = user.Role
 	claims["exp"] = time.Now().Add(time.Hour * 72).Unix()
 
-	t, err := token.SignedString(SigningKey)
+	t, err := token.SignedString(SigningKey())
 	if err != nil {
 		return c.SendStatus(fiber.StatusInternalServerError)
 	}
@@ -75,13 +75,13 @@ func signup(c *fiber.Ctx) error {
 	if query.Error != nil {
 		return res.Result(c, fiber.StatusInternalServerError, "注册失败", query.Error)
 	}
-
+	//
 	return res.ResultOK(c, true)
 }
 
-func restricted(c *fiber.Ctx) error {
+// getUserInfo 获取token中的用户信息
+func getUserInfo(c *fiber.Ctx) error {
 	user := c.Locals("user").(*jwt.Token)
 	claims := user.Claims.(jwt.MapClaims)
-	name := claims["name"].(string)
-	return c.SendString("Welcome " + name)
+	return c.JSON(claims)
 }

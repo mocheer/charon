@@ -12,14 +12,15 @@ import (
 
 // SelectBuilder 构建查询语句的参数
 type SelectBuilder struct {
-	Name   string `query:"name"`   // 表名
-	Mode   string `query:"mode"`   // 数据返回模式 take | first | last | find | default
-	Where  string `query:"where"`  // 查询 a=1 || {a:1}  => where a=1
-	Not    string `query:"not"`    // 查询 a=1 || {a:1}  => where not a=1
-	Select string `query:"select"` // 字段 a as b, sum(a) as b
-	Limit  int    `query:"limit"`  // 限制数据量
-	Offset int    `query:"offset"` // 偏移位置
-	Order  string `query:"order"`  // 排序
+	Name   string   `query:"name"`   // 表名
+	Mode   string   `query:"mode"`   // 数据返回模式 take | first | last | find | default
+	Where  string   `query:"where"`  // 查询 a=1 || {a:1}  => where a=1
+	Not    string   `query:"not"`    // 查询 a=1 || {a:1}  => where not a=1
+	Select string   `query:"select"` // 字段 a as b, sum(a) as b
+	Limit  int      `query:"limit"`  // 限制数据量
+	Offset int      `query:"offset"` // 偏移位置
+	Order  string   `query:"order"`  // 排序
+	Joins  []string `query:"joins"`  // 多表关联查询
 	// 私有属性
 	tx     *gorm.DB
 	entity models.IEntity
@@ -41,6 +42,12 @@ func (builder *SelectBuilder) Query() interface{} {
 	if builder.Select != "" {
 		// 不止是字段选择，还是字段重命名，且支持函数调用
 		query.Select(strings.Split(builder.Select, ","))
+	}
+	//
+	if builder.Joins != nil {
+		for _, joinStr := range builder.Joins {
+			query.Joins(joinStr)
+		}
 	}
 	//
 	if builder.Where != "" {

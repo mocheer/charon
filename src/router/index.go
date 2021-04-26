@@ -9,6 +9,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/etag"
 	"github.com/gofiber/fiber/v2/middleware/favicon"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/pprof"
@@ -34,11 +35,12 @@ func useRouter(app *fiber.App) {
 	api := app.Group("/api") // "/api" 这里不用api是为了与ec等框架做区分 => "/con"
 	v1 := api.Group("/v1")
 	//
+	auth.Use(v1)
+	//
 	pipal.Use(v1)
 	query.Use(v1)
 	upload.Use(v1)
 	model.Use(v1)
-	auth.Use(v1)
 	proxies.Use(v1)
 	//
 	arcgis.Use(v1)
@@ -54,6 +56,8 @@ func Init() {
 	app.Use(logger.New(logger.Config{
 		Output: os.Stdout,
 	}))
+	// 协商缓存
+	app.Use(etag.New())
 	// 插件有使用顺序，且顺序非常重要，比如说cache需要放到compress后面(这个在2.2.4之后版本已支持)，compresss需要放到业务路由前面等
 	// recover 中间件，防止因为某个路由的错误导致整个应用崩溃
 	// 发生错误时状态码为500，而且会将错误数据返回到前端
@@ -130,7 +134,7 @@ func Init() {
 	})
 	// 重定向
 	protected := jwtware.New(jwtware.Config{
-		SigningKey: auth.SigningKey,
+		SigningKey: auth.SigningKey(),
 		ErrorHandler: func(c *fiber.Ctx, err error) error {
 			cookie := new(fiber.Cookie)
 			cookie.Name = "c_url"

@@ -13,7 +13,7 @@ import (
 func main() {
 	logger.Init()
 	// 读取应用配置
-	err := fs.ReadJSON("./config/app.json", global.Config)
+	err := fs.ReadJSON("config/app.json", global.Config)
 	if err != nil {
 		logger.Error("读取配置文件失败：", err)
 	}

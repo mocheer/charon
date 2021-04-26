@@ -12,17 +12,24 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-var log = logrus.New()
+type Logger struct {
+	*logrus.Logger
+}
+
+var log *Logger
 
 // Init 初始化日志
 func Init() {
+	if log == nil {
+		log = &Logger{logrus.New()}
+	}
 	// 历史的日志文件需要删除，这里只删除一个月前的文件
 	fs.EachDirToRemove("log", func(filename string) bool {
 		timeStrArray := regexp.MustCompile(`logrus\.(.+)\.log`).FindStringSubmatch(filename)
 		if len(timeStrArray) == 0 {
 			return true
 		}
-		return clock.MustParse(timeStrArray[1], clock.FmtCompactDate).SinceLastDays(30)
+		return clock.MustParse(timeStrArray[1], clock.FmtCompactDate).SinceDays() > 10
 	})
 
 	logFileName := fmt.Sprintf("log/logrus.%s.log", clock.Now().Fmt(clock.FmtCompactDate))
@@ -30,7 +37,7 @@ func Init() {
 	if err == nil {
 		log.Out = file
 	} else {
-		log.Info("输出日志到文件失败", err)
+		log.Info("打开日志文件失败", err)
 	}
 	// 每隔一天重新定位日志文件
 	tm.SetTimeout(Init, time.Duration(clock.GetDayLastMillisecond()))

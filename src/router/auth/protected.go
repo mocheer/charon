@@ -14,7 +14,7 @@ func Protected(config jwtware.Config) fiber.Handler {
 
 // GlobalProtected 全局的认证handler
 var GlobalProtected = jwtware.New(jwtware.Config{
-	SigningKey:   SigningKey,
+	SigningKey:   SigningKey(),
 	ErrorHandler: jwtError,
 })
 
@@ -29,6 +29,7 @@ func PermissProtectd(c *fiber.Ctx) error {
 	return res.Result(c, fiber.StatusBadRequest, "没有权限", nil)
 }
 
+// jwtError jwt 认证失败
 func jwtError(c *fiber.Ctx, err error) error {
 	if err.Error() == "Missing or malformed JWT" {
 		return res.Result(c, fiber.StatusBadRequest, "Missing or malformed JWT", nil)
