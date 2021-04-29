@@ -13,8 +13,8 @@ import (
 	"github.com/mocheer/charon/src/models/orm"
 	"github.com/mocheer/charon/src/models/tables"
 	"github.com/mocheer/charon/src/models/types"
+	"github.com/mocheer/charon/src/mw"
 	"github.com/mocheer/charon/src/res"
-	"github.com/mocheer/charon/src/router/store"
 	"github.com/mocheer/pluto/fs"
 	"github.com/mocheer/pluto/tm"
 )
@@ -24,10 +24,10 @@ func Use(api fiber.Router) {
 	router := api.Group("/dmap")
 	router.Get("/image/:id/:z", imageHandle)
 	router.Get("/image/:id/:z/:y/:x", imageTileHandle)
-	router.Get("/layer/:id", store.GlobalCache, layerHandle)
-	router.Get("/feature/:id", store.GlobalCache, featureHandle)
-	router.Get("/feature2/:id", store.GlobalCache, featureHandle2)
-	router.Get("/identify/:id", store.GlobalCache, identifyHandle)
+	router.Get("/layer/:id", mw.GlobalCache, layerHandle)
+	router.Get("/feature/:id", mw.GlobalCache, featureHandle)
+	router.Get("/feature2/:id", mw.GlobalCache, featureHandle2)
+	router.Get("/identify/:id", mw.GlobalCache, identifyHandle)
 }
 
 // imageHandle
@@ -147,7 +147,7 @@ func layerHandle(c *fiber.Ctx) error {
 func featureHandle(c *fiber.Ctx) error {
 	idParam := c.Params("id")
 	result := &[]types.GeoFeature{}
-	global.Db.Raw(`select row.geojson->>'type' as type , row.geojson->'coordinates' as coordinates , row.properties from (select st_asgeojson(geometry,4)::jsonb as geojson,properties from pipal.dmap_feature where layer_id = ?)row `, idParam).Scan(result)
+	global.DB.Raw(`select row.geojson->>'type' as type , row.geojson->'coordinates' as coordinates , row.properties from (select st_asgeojson(geometry,4)::jsonb as geojson,properties from pipal.dmap_feature where layer_id = ?)row `, idParam).Scan(result)
 	//
 	return res.ResultOK(c, &map[string]interface{}{
 		"type":       "GeometryCollection",

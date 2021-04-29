@@ -15,7 +15,7 @@ func CheckPasswordHash(password, hash string) bool {
 // getUserByUsername 根据用户名获取用户信息
 func getUserByUsername(userName string) (*tables.User, error) {
 	var user tables.User
-	if err := global.Db.Where(&tables.User{Name: userName}).Find(&user).Error; err != nil {
+	if err := global.DB.Where(&tables.User{Name: userName}).Find(&user).Error; err != nil {
 		return nil, err
 	}
 	return &user, nil

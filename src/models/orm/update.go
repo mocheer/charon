@@ -17,7 +17,7 @@ type UpdateBuilder struct {
 func (builder *UpdateBuilder) Query() interface{} {
 	var entity = models.NewTableStruct(builder.Name)
 	//
-	query := global.Db.Model(entity)
+	query := global.DB.Model(entity)
 	//
 	if builder.Where != "" {
 		var whereMap map[string]interface{}

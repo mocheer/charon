@@ -1,4 +1,4 @@
-package auth
+package mw
 
 import (
 	jwt "github.com/form3tech-oss/jwt-go"
@@ -7,16 +7,16 @@ import (
 	"github.com/mocheer/charon/src/res"
 )
 
+// SigningKey 密钥
+var SigningKey []byte
+
 // Protected protect routes
 func Protected(config jwtware.Config) fiber.Handler {
 	return jwtware.New(config)
 }
 
 // GlobalProtected 全局的认证handler
-var GlobalProtected = jwtware.New(jwtware.Config{
-	SigningKey:   SigningKey(),
-	ErrorHandler: jwtError,
-})
+var GlobalProtected func(*fiber.Ctx) error
 
 // PermissProtectd 特殊权限认证
 func PermissProtectd(c *fiber.Ctx) error {

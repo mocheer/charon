@@ -4,10 +4,8 @@ import (
 	"encoding/json"
 
 	"github.com/mocheer/charon/src/models"
-	"github.com/mocheer/charon/src/router/auth"
-	"github.com/mocheer/charon/src/router/store"
+	"github.com/mocheer/charon/src/mw"
 
-	"github.com/mocheer/charon/src/db"
 	"github.com/mocheer/charon/src/models/orm"
 	"github.com/mocheer/charon/src/models/tables"
 
@@ -22,13 +20,13 @@ func Use(api fiber.Router) {
 	//
 	router := api.Group("/query")
 	// select
-	router.Get("/:name", store.GlobalCache, querySeclect)
+	router.Get("/:name", mw.GlobalCache, querySeclect)
 	// insert 需要添加认证
-	router.Put("/:name", auth.GlobalProtected, auth.PermissProtectd, queryInsert)
+	router.Put("/:name", mw.GlobalProtected, mw.PermissProtectd, queryInsert)
 	// update 需要添加认证
-	router.Post("/:name", auth.GlobalProtected, auth.PermissProtectd, queryUpdate)
+	router.Post("/:name", mw.GlobalProtected, mw.PermissProtectd, queryUpdate)
 	// delete 需要添加认证
-	router.Delete("/:name", auth.GlobalProtected, auth.PermissProtectd, queryDelete)
+	router.Delete("/:name", mw.GlobalProtected, mw.PermissProtectd, queryDelete)
 	// raw
 	router.Get("/raw/:name", queryRaw)
 	router.Post("/raw/:name", queryRaw)
@@ -50,7 +48,7 @@ func queryInsert(c *fiber.Ctx) error {
 	var nameParam = c.Params("name")
 	var entity = models.NewTableStruct(nameParam)
 	c.BodyParser(entity)
-	var query = global.Db.Model(entity)
+	var query = global.DB.Model(entity)
 	query.Create(entity)
 	return res.ResultOK(c, true)
 }
@@ -59,7 +57,7 @@ func queryUpdate(c *fiber.Ctx) error {
 	var nameParam = c.Params("name")
 	var whereQuery = c.Query("where")
 	var entity = models.NewTableStruct(nameParam)
-	var query = global.Db.Model(entity)
+	var query = global.DB.Model(entity)
 	json.Unmarshal(c.Body(), entity)
 	if whereQuery != "" {
 		var whereMap map[string]interface{}
@@ -82,7 +80,7 @@ func queryDelete(c *fiber.Ctx) error {
 	//
 	var entity = models.NewTableStruct(nameParam)
 	json.Unmarshal(c.Body(), entity)
-	var query = global.Db.Table(entity.TableName())
+	var query = global.DB.Table(entity.TableName())
 	//
 	if whereQuery != "" {
 		var whereMap map[string]interface{}
@@ -102,7 +100,7 @@ func queryRaw(c *fiber.Ctx) error {
 	var nameParam = c.Params("name")
 	var rawSQL tables.RawSQL
 	var result []map[string]interface{}
-	var err = global.Db.Where(&tables.RawSQL{Name: nameParam}).First(&rawSQL)
+	var err = global.DB.Where(&tables.RawSQL{Name: nameParam}).First(&rawSQL)
 	if err != nil {
 		var body map[string]interface{}
 		var namedArg map[string]interface{}
@@ -115,9 +113,9 @@ func queryRaw(c *fiber.Ctx) error {
 				namedArg = body["namedArg"].(map[string]interface{})
 			}
 		}
-		query := global.Db.Raw(rawSQL.Text, namedArg)
+		query := global.DB.Raw(rawSQL.Text, namedArg)
 		//
-		db.ScanIntoMap(query, &result)
+		global.DB.ScanIntoMap(query, &result)
 	}
 
 	return res.ResultOK(c, result)

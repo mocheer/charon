@@ -27,3 +27,7 @@ type AppConfig struct {
 	// 数据源：数据库连接串
 	DbDSN string
 }
+
+func (appConfig *AppConfig) IsDev() bool {
+	return appConfig.Mode == `dev`
+}

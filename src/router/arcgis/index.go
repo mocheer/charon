@@ -7,8 +7,8 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/mocheer/charon/src/models/types"
+	"github.com/mocheer/charon/src/mw"
 	"github.com/mocheer/charon/src/res"
-	"github.com/mocheer/charon/src/router/store"
 )
 
 // cacheServer
@@ -18,9 +18,9 @@ var cacheServer map[string]*TileServer = map[string]*TileServer{}
 func Use(api fiber.Router) {
 	router := api.Group("/arcgis")
 	// GetCapabilities
-	router.Get("/:name/capabilities", store.GlobalCache, getCapabilities)
+	router.Get("/:name/capabilities", mw.GlobalCache, getCapabilities)
 	// GetTile
-	router.Get("/:name/tile/:z/:y/:x", store.NewCache(time.Hour*24*30), getTile)
+	router.Get("/:name/tile/:z/:y/:x", mw.NewCache(time.Hour*24*30), getTile)
 	//
 }
 

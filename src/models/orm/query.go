@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"strings"
 
-	"github.com/mocheer/charon/src/db"
 	"github.com/mocheer/charon/src/global"
 	"github.com/mocheer/charon/src/models"
 	"gorm.io/gorm"
@@ -30,7 +29,7 @@ type SelectBuilder struct {
 func (builder *SelectBuilder) Model() *gorm.DB {
 	if builder.tx == nil && builder.Name != "" {
 		builder.entity = models.NewTableStruct(builder.Name)
-		builder.tx = global.Db.Model(builder.entity)
+		builder.tx = global.DB.Model(builder.entity)
 	}
 	return builder.tx
 }
@@ -95,7 +94,7 @@ func (builder *SelectBuilder) Query() interface{} {
 		return result
 	default:
 		var result []map[string]interface{}
-		db.ScanIntoMap(query, &result)
+		global.DB.ScanIntoMap(query, &result)
 		return result
 	}
 }

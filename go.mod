@@ -16,7 +16,6 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.6 // indirect
 	github.com/mocheer/pluto v0.0.0-20210419103954-a857fd1137fc
 	github.com/shopspring/decimal v1.2.0 // indirect
-	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0 // indirect
 	github.com/tdewolff/canvas v0.0.0-20210420033948-0f660268c5ad // direct
 	github.com/tdewolff/minify/v2 v2.9.16 // indirect
@@ -25,7 +24,6 @@ require (
 	github.com/valyala/tcplisten v1.0.0 // indirect
 	golang.org/x/crypto v0.0.0-20210415154028-4f45737414dc
 	golang.org/x/image v0.0.0-20210220032944-ac19c3e999fb // indirect
-	golang.org/x/sys v0.0.0-20210420072515-93ed5bcd2bfe // indirect
 	golang.org/x/text v0.3.6 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 	gorm.io/datatypes v1.0.1

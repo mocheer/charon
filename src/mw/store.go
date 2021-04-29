@@ -1,4 +1,4 @@
-package store
+package mw
 
 import (
 	"fmt"
@@ -7,14 +7,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cache"
 )
-
-// 全局缓存对象
-
-// Use 初始化 clear 路由
-func Use(api fiber.Router) {
-	router := api.Group("/cache")
-	router.Get("clear", clear)
-}
 
 // NewCache 缓存
 func NewCache(exp time.Duration) func(*fiber.Ctx) error {
@@ -53,8 +45,3 @@ var GlobalCacheControl = NewCacheControl(31536000)
 
 // GlobalCache 全局缓存
 var GlobalCache = NewCache(time.Hour * 24)
-
-// uploadFile
-func clear(c *fiber.Ctx) error {
-	return nil
-}

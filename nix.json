@@ -1,7 +1,9 @@
 {
   "name":"charon",
   "scripts":{
+    "dev":"air",
     "build":"go build -ldflags \"-s -w\"",
+    "build-dist":"go build -ldflags \"-s -w\" -o dist/{appName}.exe",
     "install":"./tools/nssm.exe install {appName} {execPath}/charon.exe",
     "start":"./tools/nssm.exe start {appName}",
     "stop":"./tools/nssm.exe stop {appName}",

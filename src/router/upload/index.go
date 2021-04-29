@@ -8,8 +8,8 @@ import (
 	"github.com/gofiber/fiber/v2"
 
 	"github.com/mocheer/charon/src/global"
+	"github.com/mocheer/charon/src/mw"
 	"github.com/mocheer/charon/src/res"
-	"github.com/mocheer/charon/src/router/auth"
 	"github.com/mocheer/pluto/fs"
 )
 
@@ -17,11 +17,11 @@ import (
 func Use(api fiber.Router) {
 	router := api.Group("/upload")
 	// 上传文件
-	router.Post("/file/*", auth.GlobalProtected, auth.PermissProtectd, uploadFile)
+	router.Post("/file/*", mw.GlobalProtected, mw.PermissProtectd, uploadFile)
 	// 上传多个文件
-	router.Post("/files/*", auth.GlobalProtected, auth.PermissProtectd, uploadFiles)
+	router.Post("/files/*", mw.GlobalProtected, mw.PermissProtectd, uploadFiles)
 	// 上传文件夹（支持chrome）
-	router.Post("/folder", auth.GlobalProtected, auth.PermissProtectd, uploadFolder)
+	router.Post("/folder", mw.GlobalProtected, mw.PermissProtectd, uploadFolder)
 }
 
 // uploadFile 上传文件
@@ -51,7 +51,7 @@ func uploadFiles(c *fiber.Ctx) error {
 			return err
 		}
 	}
-	global.Db.Exec("select * from pipal.update_app_lib_version()")
+	global.DB.Exec("select * from pipal.update_app_lib_version()")
 
 	return res.ResultOK(c, true)
 }
@@ -78,6 +78,6 @@ func uploadFolder(c *fiber.Ctx) error {
 			return res.ResultError(c, "上传的文件夹不符合规范", nil)
 		}
 	}
-	global.Db.Exec("select * from pipal.update_app_lib_version()")
+	global.DB.Exec("select * from pipal.update_app_lib_version()")
 	return res.ResultOK(c, true)
 }

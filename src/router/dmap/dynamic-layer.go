@@ -11,7 +11,7 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/mocheer/charon/src/logger"
+	"github.com/mocheer/charon/src/global"
 	"github.com/mocheer/charon/src/models/types"
 	"github.com/mocheer/pluto/fn"
 	"github.com/mocheer/pluto/fs"
@@ -230,7 +230,7 @@ func (layer *DynamicLayer) drawImage(path string, x float64, y float64) {
 	image, err := fs.GetImageFromPath(filepath.Join("./public", path))
 
 	if err != nil {
-		logger.Error(err)
+		global.Log.Error(err)
 		return
 	}
 	layer.ctx.DrawImage(x-16, y-16, image, 1)

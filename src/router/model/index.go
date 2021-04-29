@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/mocheer/charon/src/db"
 	"github.com/mocheer/charon/src/global"
 	"github.com/mocheer/charon/src/models"
 	"github.com/mocheer/charon/src/res"
@@ -21,7 +20,7 @@ func Use(api fiber.Router) {
 
 func queryTable(c *fiber.Ctx) error {
 	var result []map[string]interface{}
-	var query = global.Db.Raw(`
+	var query = global.DB.Raw(`
 SELECT 
 tb.tablename as tablename,
 a.attname AS columnname,
@@ -37,7 +36,7 @@ and a.atttypid = t.oid
 and c.relname = tb.tablename 
 order by tablename
 `, map[string]interface{}{"schema": "pipal"})
-	db.ScanIntoMap(query, &result)
+	global.DB.ScanIntoMap(query, &result)
 	var str = ""
 	for tableName, ctMap := range result {
 		str += fmt.Sprintf(`\ntype %d struct {\n`, tableName)
