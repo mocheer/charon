@@ -42,3 +42,8 @@ func Init() {
 	//
 	Log.Info("启动成功")
 }
+
+// IsDev 是否是开发模式
+func IsDev() bool {
+	return Config.Mode == `dev`
+}
