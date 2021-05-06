@@ -20,13 +20,13 @@ func Use(api fiber.Router) {
 	//
 	router := api.Group("/query")
 	// select
-	router.Get("/:name", mw.GlobalCache, querySeclect)
+	router.Get("/:name", mw.Cache, querySeclect)
 	// insert 需要添加认证
-	router.Put("/:name", mw.GlobalProtected, mw.PermissProtectd, queryInsert)
+	router.Put("/:name", mw.Protector, mw.PermissProtectd, queryInsert)
 	// update 需要添加认证
-	router.Post("/:name", mw.GlobalProtected, mw.PermissProtectd, queryUpdate)
+	router.Post("/:name", mw.Protector, mw.PermissProtectd, queryUpdate)
 	// delete 需要添加认证
-	router.Delete("/:name", mw.GlobalProtected, mw.PermissProtectd, queryDelete)
+	router.Delete("/:name", mw.Protector, mw.PermissProtectd, queryDelete)
 	// raw
 	router.Get("/raw/:name", queryRaw)
 	router.Post("/raw/:name", queryRaw)
@@ -41,7 +41,7 @@ func querySeclect(c *fiber.Ctx) error {
 	}
 	builder.Name = c.Params("name")
 	result := builder.Query()
-	return res.ResultOK(c, result)
+	return res.JSON(c, result)
 }
 
 func queryInsert(c *fiber.Ctx) error {
@@ -50,7 +50,7 @@ func queryInsert(c *fiber.Ctx) error {
 	c.BodyParser(entity)
 	var query = global.DB.Model(entity)
 	query.Create(entity)
-	return res.ResultOK(c, true)
+	return res.JSON(c, true)
 }
 
 func queryUpdate(c *fiber.Ctx) error {
@@ -70,7 +70,7 @@ func queryUpdate(c *fiber.Ctx) error {
 	}
 
 	query.Updates(entity)
-	return res.ResultOK(c, query.RowsAffected > 1)
+	return res.JSON(c, query.RowsAffected > 1)
 }
 
 // queryDelete
@@ -92,7 +92,7 @@ func queryDelete(c *fiber.Ctx) error {
 		}
 	}
 	query.Delete(entity)
-	return res.ResultOK(c, true)
+	return res.JSON(c, true)
 }
 
 // queryRaw
@@ -118,5 +118,5 @@ func queryRaw(c *fiber.Ctx) error {
 		global.DB.ScanIntoMap(query, &result)
 	}
 
-	return res.ResultOK(c, result)
+	return res.JSON(c, result)
 }

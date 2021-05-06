@@ -18,7 +18,7 @@ var cacheServer map[string]*TileServer = map[string]*TileServer{}
 func Use(api fiber.Router) {
 	router := api.Group("/arcgis")
 	// GetCapabilities
-	router.Get("/:name/capabilities", mw.GlobalCache, getCapabilities)
+	router.Get("/:name/capabilities", mw.Cache, getCapabilities)
 	// GetTile
 	router.Get("/:name/tile/:z/:y/:x", mw.NewCache(time.Hour*24*30), getTile)
 	//
@@ -29,9 +29,9 @@ func getCapabilities(c *fiber.Ctx) error {
 	nameParam := c.Params("name")
 	server, err := NewTileServer(filepath.Join(BaseDirectory, nameParam, "conf.xml"))
 	if err == nil {
-		return res.ResultOK(c, server)
+		return res.JSON(c, server)
 	}
-	return res.ResultError(c, "获取服务元数据错误", err)
+	return res.Error(c, "获取服务元数据错误", err)
 }
 
 // getTile
@@ -59,5 +59,5 @@ func getTile(c *fiber.Ctx) error {
 		}
 	}
 	//
-	return res.ResultError(c, "读取瓦片错误", err)
+	return res.Error(c, "读取瓦片错误", err)
 }

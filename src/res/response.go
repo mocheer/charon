@@ -20,17 +20,17 @@ func Result(c *fiber.Ctx, code int, data interface{}, msg interface{}) error {
 	})
 }
 
-// ResultOK 返回成功
-func ResultOK(c *fiber.Ctx, data interface{}) error {
+// JSON 返回成功
+func JSON(c *fiber.Ctx, data interface{}) error {
 	return Result(c, fiber.StatusOK, data, "")
 }
 
-// ResultError 返回错误信息
-func ResultError(c *fiber.Ctx, data string, err error) error {
-	return Result(c, fiber.StatusInternalServerError, data, err)
+// Error 返回错误信息
+func Error(c *fiber.Ctx, data string, err error) error {
+	return Result(c, fiber.StatusInternalServerError, data, err.Error())
 }
 
-// ResultPNG 返回图片信息
-func ResultPNG(c *fiber.Ctx, data []byte) error {
+// PNG 返回图片信息
+func PNG(c *fiber.Ctx, data []byte) error {
 	return c.Type("png").Send(data)
 }

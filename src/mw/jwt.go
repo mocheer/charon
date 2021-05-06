@@ -15,10 +15,10 @@ func Protected(config jwtware.Config) fiber.Handler {
 	return jwtware.New(config)
 }
 
-// GlobalProtected 全局的认证handler
-var GlobalProtected func(*fiber.Ctx) error
+// Protector 全局的认证handler
+var Protector func(*fiber.Ctx) error
 
-// PermissProtectd 特殊权限认证
+// PermissProtectd 特殊权限认证 role=1 有权限
 func PermissProtectd(c *fiber.Ctx) error {
 	user := c.Locals("user").(*jwt.Token)
 	claims := user.Claims.(jwt.MapClaims)

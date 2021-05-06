@@ -17,11 +17,11 @@ import (
 func Use(api fiber.Router) {
 	router := api.Group("/upload")
 	// 上传文件
-	router.Post("/file/*", mw.GlobalProtected, mw.PermissProtectd, uploadFile)
+	router.Post("/file/*", mw.Protector, mw.PermissProtectd, uploadFile)
 	// 上传多个文件
-	router.Post("/files/*", mw.GlobalProtected, mw.PermissProtectd, uploadFiles)
+	router.Post("/files/*", mw.Protector, mw.PermissProtectd, uploadFiles)
 	// 上传文件夹（支持chrome）
-	router.Post("/folder", mw.GlobalProtected, mw.PermissProtectd, uploadFolder)
+	router.Post("/folder", mw.Protector, mw.PermissProtectd, uploadFolder)
 }
 
 // uploadFile 上传文件
@@ -53,7 +53,7 @@ func uploadFiles(c *fiber.Ctx) error {
 	}
 	global.DB.Exec("select * from pipal.update_app_lib_version()")
 
-	return res.ResultOK(c, true)
+	return res.JSON(c, true)
 }
 
 // uploadFolder 上传文件夹
@@ -72,12 +72,12 @@ func uploadFolder(c *fiber.Ctx) error {
 			fs.MkdirNotExist(dst)
 			err := c.SaveFile(file, dst)
 			if err != nil {
-				return res.ResultError(c, "上传失败", err)
+				return res.Error(c, "上传失败", err)
 			}
 		} else {
-			return res.ResultError(c, "上传的文件夹不符合规范", nil)
+			return res.Error(c, "上传的文件夹不符合规范", nil)
 		}
 	}
 	global.DB.Exec("select * from pipal.update_app_lib_version()")
-	return res.ResultOK(c, true)
+	return res.JSON(c, true)
 }

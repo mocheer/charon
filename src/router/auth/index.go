@@ -17,7 +17,7 @@ func Use(api fiber.Router) {
 	router := api.Group("/auth")
 	router.Post("/login", login)
 	router.Post("/signup", signup)
-	router.Get("/info", mw.GlobalProtected, getUserInfo)
+	router.Get("/info", mw.Protector, getUserInfo)
 }
 
 // login 登录
@@ -60,7 +60,7 @@ func login(c *fiber.Ctx) error {
 	// Set cookie
 	c.Cookie(cookie)
 
-	return res.ResultOK(c, t)
+	return res.JSON(c, t)
 }
 
 // signup 注册
@@ -77,7 +77,7 @@ func signup(c *fiber.Ctx) error {
 		return res.Result(c, fiber.StatusInternalServerError, "注册失败", query.Error)
 	}
 	//
-	return res.ResultOK(c, true)
+	return res.JSON(c, true)
 }
 
 // getUserInfo 获取token中的用户信息

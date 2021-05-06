@@ -6,8 +6,10 @@ import (
 	"runtime/debug"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/limiter"
 
 	"github.com/mocheer/charon/src/global"
 	"github.com/mocheer/charon/src/models/orm"
@@ -22,16 +24,16 @@ import (
 // Use 初始化 dmap 路由
 func Use(api fiber.Router) {
 	router := api.Group("/dmap")
-	router.Get("/image/:id/:z", imageHandle)
+	router.Get("/image/:id/:z", mw.NewLimiter(limiter.Config{Max: 1, Expiration: 30 * time.Second}), createImageHandle)
 	router.Get("/image/:id/:z/:y/:x", imageTileHandle)
-	router.Get("/layer/:id", mw.GlobalCache, layerHandle)
-	router.Get("/feature/:id", mw.GlobalCache, featureHandle)
-	router.Get("/feature2/:id", mw.GlobalCache, featureHandle2)
-	router.Get("/identify/:id", mw.GlobalCache, identifyHandle)
+	router.Get("/layer/:id", mw.Cache, layerHandle)
+	router.Get("/feature/:id", mw.Cache, featureHandle)
+	router.Get("/feature2/:id", mw.Cache, featureHandle2)
+	router.Get("/identify/:id", mw.Cache, identifyHandle)
 }
 
-// imageHandle
-func imageHandle(c *fiber.Ctx) error {
+// createImageHandle
+func createImageHandle(c *fiber.Ctx) error {
 	//
 	idParam := c.Params("id")
 	zParam := c.Params("z")
@@ -69,13 +71,13 @@ func imageHandle(c *fiber.Ctx) error {
 		dynamicLayer.SaveTiles().Wait()
 		if dynamicLayer.NumTile < 32 {
 			data := dynamicLayer.GetData()
-			return res.ResultPNG(c, data)
+			return res.PNG(c, data)
 		}
 		debug.FreeOSMemory()
-		return res.ResultOK(c, true)
+		return res.JSON(c, true)
 	}
 
-	return res.ResultError(c, "获取数据错误", nil)
+	return res.Error(c, "获取数据错误", nil)
 }
 
 // imageHandle
@@ -127,7 +129,7 @@ func imageTileHandle(c *fiber.Ctx) error {
 		return c.SendFile(fp)
 	}
 
-	return res.ResultError(c, "获取数据错误", nil)
+	return res.Error(c, "获取数据错误", nil)
 }
 
 // layerHandle
@@ -140,7 +142,7 @@ func layerHandle(c *fiber.Ctx) error {
 	builder.Select = "crs,extent,id,name,options,type,properties,array_to_json(array(select row_to_json(e) from (select * from pipal.dmap_layer where parent_id = 1)e)) as items"
 	result := builder.Query()
 	//
-	return res.ResultOK(c, result)
+	return res.JSON(c, result)
 }
 
 // featureHandle 要素服务
@@ -149,7 +151,7 @@ func featureHandle(c *fiber.Ctx) error {
 	result := &[]types.GeoFeature{}
 	global.DB.Raw(`select row.geojson->>'type' as type , row.geojson->'coordinates' as coordinates , row.properties from (select st_asgeojson(geometry,4)::jsonb as geojson,properties from pipal.dmap_feature where layer_id = ?)row `, idParam).Scan(result)
 	//
-	return res.ResultOK(c, &map[string]interface{}{
+	return res.JSON(c, &map[string]interface{}{
 		"type":       "GeometryCollection",
 		"geometries": result,
 		"properties": struct{}{},
@@ -185,7 +187,7 @@ func featureHandle2(c *fiber.Ctx) error {
 	}
 	//
 	result := builder.Query()
-	return res.ResultOK(c, result)
+	return res.JSON(c, result)
 }
 
 // identifyHandle

@@ -8,14 +8,15 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cache"
 )
 
-// NewCache 缓存
+// Cache 全局缓存
+var Cache = NewCache(time.Hour * 24)
+
+// CacheControl 全局的前端强缓存
+var CacheControl = NewCacheControl(31536000)
+
+// NewCache 创建缓存
 func NewCache(exp time.Duration) func(*fiber.Ctx) error {
 	return cache.New(cache.Config{
-		// Next: func(c *fiber.Ctx) bool {
-		// 	path := c.Path()
-		// 	// strings.HasPrefix(path, "/api/v1/query/raw") || !strings.HasPrefix(path, "/api/v1/query")
-		// 	return strings.HasPrefix(path, "/api/v1/query/s/stipule") || strings.HasPrefix(path, "/api/v1/pipal/stipule") //
-		// },
 		Next: func(c *fiber.Ctx) bool {
 			return c.Query("refresh") == "true"
 		},
@@ -33,15 +34,10 @@ func NewCache(exp time.Duration) func(*fiber.Ctx) error {
 	})
 }
 
-// NewCacheControl
+// NewCacheControl 创建前端强缓存的中间件
 func NewCacheControl(maxAge int) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		c.Set(fiber.HeaderCacheControl, fmt.Sprintf("public, max-age=%d", maxAge))
 		return nil
 	}
 }
-
-var GlobalCacheControl = NewCacheControl(31536000)
-
-// GlobalCache 全局缓存
-var GlobalCache = NewCache(time.Hour * 24)

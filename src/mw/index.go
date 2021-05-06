@@ -23,7 +23,7 @@ func initMW() {
 	//
 	SigningKey = fn.StringBytes(global.Config.Name)
 	// token路由守卫
-	GlobalProtected = jwtware.New(jwtware.Config{
+	Protector = jwtware.New(jwtware.Config{
 		SigningKey:   SigningKey,
 		ErrorHandler: jwtError,
 	})
@@ -107,14 +107,8 @@ func Use(app *fiber.App) {
 		return c.SendFile("./web/index.html", false)
 	})
 
-	// 不支持压缩中间件，所以只能放到这个中间件前面实例化
-	//app.Use("/docs", swagger.Handler) // default
-
-	// 强缓存=>不是所有的请求都需要强缓存
-	// app.Use(store.GlobalCache)
-	//
 	// 压缩中间件
-	// 为什么 localhost 和127.0.0.1的请求时是br，而192.168.117.215或者其他远程服务器是gzip
+	// 为什么 localhost 和 127.0.0.1 的请求时是br，而 192.168.117.215 或者其他远程服务器是 gzip
 	app.Use(compress.New(compress.Config{
 		Level: compress.LevelBestSpeed, // 1
 	}))
