@@ -8,7 +8,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/mocheer/charon/src/models/types"
 	"github.com/mocheer/charon/src/mw"
-	"github.com/mocheer/charon/src/res"
+	"github.com/mocheer/charon/src/mw/res"
 )
 
 // cacheServer

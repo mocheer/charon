@@ -24,6 +24,6 @@ type AppConfig struct {
 	Port string
 	// 静态资源服务
 	Static map[string]StaticConfig
-	// 数据源：数据库连接串
-	DbDSN string
+	// DSN(Data Source Name)数据源：数据库连接串
+	DSN string
 }

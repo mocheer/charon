@@ -13,7 +13,7 @@ type Response struct {
 
 // Result 约定返回的数据格式
 func Result(c *fiber.Ctx, code int, data interface{}, msg interface{}) error {
-	return c.Status(code).JSON(Response{
+	return c.Status(code).JSON(&Response{
 		code,
 		data,
 		msg,

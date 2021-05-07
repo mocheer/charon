@@ -8,7 +8,7 @@ import (
 	"github.com/mocheer/charon/src/global"
 	"github.com/mocheer/charon/src/models/tables"
 	"github.com/mocheer/charon/src/mw"
-	"github.com/mocheer/charon/src/res"
+	"github.com/mocheer/charon/src/mw/res"
 )
 
 // Use 初始化 auth 路由

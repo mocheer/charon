@@ -16,7 +16,7 @@ import (
 	"github.com/mocheer/charon/src/models/tables"
 	"github.com/mocheer/charon/src/models/types"
 	"github.com/mocheer/charon/src/mw"
-	"github.com/mocheer/charon/src/res"
+	"github.com/mocheer/charon/src/mw/res"
 	"github.com/mocheer/pluto/fs"
 	"github.com/mocheer/pluto/tm"
 )
