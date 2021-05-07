@@ -16,7 +16,7 @@ import (
 	"github.com/mocheer/pluto/fn"
 	"github.com/mocheer/pluto/fs"
 	"github.com/tdewolff/canvas"
-	"github.com/tdewolff/canvas/rasterizer"
+	"github.com/tdewolff/canvas/renderers/rasterizer"
 	"github.com/twpayne/go-geom"
 	"github.com/twpayne/go-geom/encoding/geojson"
 	"gorm.io/datatypes"
@@ -238,6 +238,7 @@ func (layer *DynamicLayer) drawImage(path string, x float64, y float64) {
 
 // GetData 获取画布数据
 func (layer *DynamicLayer) GetData() []byte {
+
 	image := rasterizer.Draw(layer.canvas, 1)
 	buf := new(bytes.Buffer)
 	// jpeg.Encode(buf, image, nil)
