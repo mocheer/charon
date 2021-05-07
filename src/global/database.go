@@ -15,10 +15,10 @@ type DataBase struct {
 
 // Open 连接数据库
 func openDB() (database *DataBase, err error) {
-	if Config.DbDSN == "" {
+	if Config.DSN == "" {
 		return
 	}
-	db, err := gorm.Open(postgres.Open(Config.DbDSN), &gorm.Config{AllowGlobalUpdate: false})
+	db, err := gorm.Open(postgres.Open(Config.DSN), &gorm.Config{AllowGlobalUpdate: false})
 	if err != nil {
 		return
 	}
