@@ -8,7 +8,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/gofiber/fiber/v2/middleware/csrf"
 	"github.com/gofiber/fiber/v2/middleware/etag"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/pprof"
@@ -37,8 +36,12 @@ func Use(app *fiber.App) {
 	initMW()
 	// /debug/pprof/
 	app.Use(pprof.New())
-	//
-	app.Use(csrf.New())
+	// 已经有token验证了
+	// app.Use(csrf.New(csrf.Config{
+	// 	Next: func(c *fiber.Ctx) bool {
+	// 		return c.Path() == `/api/v1/auth/login`
+	// 	},
+	// }))
 	app.Use(helmet.New())
 	// 日志中间件
 	app.Use(logger.New(logger.Config{

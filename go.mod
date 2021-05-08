@@ -5,6 +5,7 @@ go 1.16
 require (
 	github.com/ajstarks/svgo v0.0.0-20210406150507-75cfd577ce75 // indirect
 	github.com/andybalholm/brotli v1.0.2 // indirect
+	github.com/benoitkugler/textlayout v0.0.0-20210506164253-1da095469b09 // indirect
 	github.com/form3tech-oss/jwt-go v3.2.2+incompatible
 	github.com/gofiber/fiber/v2 v2.9.0
 	github.com/gofiber/helmet/v2 v2.1.2 // indirect
@@ -18,7 +19,7 @@ require (
 	github.com/mocheer/pluto v0.0.0-20210429095047-c4e6c07bef14
 	github.com/shopspring/decimal v1.2.0 // indirect
 	github.com/stretchr/testify v1.7.0 // indirect
-	github.com/tdewolff/canvas v0.0.0-20210505183520-925a1f0167be // direct
+	github.com/tdewolff/canvas v0.0.0-20210507174957-44ce152a5327 // direct
 	github.com/twpayne/go-geom v1.4.0
 	github.com/valyala/fasthttp v1.24.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect
