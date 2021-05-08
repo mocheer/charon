@@ -8,10 +8,12 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/csrf"
 	"github.com/gofiber/fiber/v2/middleware/etag"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/pprof"
 	"github.com/gofiber/fiber/v2/middleware/recover"
+	"github.com/gofiber/helmet/v2"
 	jwtware "github.com/gofiber/jwt/v2"
 	"github.com/mocheer/charon/src/global"
 	"github.com/mocheer/pluto/clock"
@@ -35,6 +37,9 @@ func Use(app *fiber.App) {
 	initMW()
 	// /debug/pprof/
 	app.Use(pprof.New())
+	//
+	app.Use(csrf.New())
+	app.Use(helmet.New())
 	// 日志中间件
 	app.Use(logger.New(logger.Config{
 		Output: os.Stdout,
@@ -74,10 +79,10 @@ func Use(app *fiber.App) {
 	//
 	for name, config := range global.Config.Static {
 		app.Static(name, config.Dir, fiber.Static{
-			Compress:  true,        //
-			ByteRange: true,        //
-			Browse:    false,       // 是否访问目录时列出文件列表
-			MaxAge:    clock.Month, // 缓存时间，单位秒
+			Compress:  true,       //
+			ByteRange: true,       //
+			Browse:    false,      // 是否访问目录时列出文件列表
+			MaxAge:    clock.Week, // 强缓存时间，单位秒
 			Index:     "index.html",
 		})
 	}

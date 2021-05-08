@@ -20,11 +20,11 @@ func Use(api fiber.Router) {
 	//
 	router := api.Group("/query")
 	// select
-	router.Get("/:name", mw.Cache, querySeclect)
+	router.Get("/:name", mw.Cache, Select)
 	// insert 需要添加认证
-	router.Put("/:name", mw.Protector, mw.PermissProtectd, queryInsert)
+	router.Put("/:name", mw.Protector, mw.PermissProtectd, Insert)
 	// update 需要添加认证
-	router.Post("/:name", mw.Protector, mw.PermissProtectd, queryUpdate)
+	router.Post("/:name", mw.Protector, mw.PermissProtectd, Update)
 	// delete 需要添加认证
 	router.Delete("/:name", mw.Protector, mw.PermissProtectd, queryDelete)
 	// raw
@@ -33,8 +33,8 @@ func Use(api fiber.Router) {
 }
 
 // matched, _ := regexp.MatchString(`pg_*`, nameParam)
-// querySeclect
-func querySeclect(c *fiber.Ctx) error {
+// Select
+func Select(c *fiber.Ctx) error {
 	var builder = &orm.SelectBuilder{}
 	if err := c.QueryParser(builder); err != nil {
 		return err
@@ -44,7 +44,8 @@ func querySeclect(c *fiber.Ctx) error {
 	return res.JSON(c, result)
 }
 
-func queryInsert(c *fiber.Ctx) error {
+// Insert 增加
+func Insert(c *fiber.Ctx) error {
 	var nameParam = c.Params("name")
 	var entity = models.NewTableStruct(nameParam)
 	c.BodyParser(entity)
@@ -53,7 +54,8 @@ func queryInsert(c *fiber.Ctx) error {
 	return res.JSON(c, true)
 }
 
-func queryUpdate(c *fiber.Ctx) error {
+// Update 修改
+func Update(c *fiber.Ctx) error {
 	var nameParam = c.Params("name")
 	var whereQuery = c.Query("where")
 	var entity = models.NewTableStruct(nameParam)
@@ -70,7 +72,12 @@ func queryUpdate(c *fiber.Ctx) error {
 	}
 
 	query.Updates(entity)
-	return res.JSON(c, query.RowsAffected > 1)
+	if query.RowsAffected > 1 {
+		return res.JSON(c, true)
+	} else {
+		return res.Result(c, 500, entity, "")
+	}
+
 }
 
 // queryDelete
