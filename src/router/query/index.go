@@ -26,10 +26,10 @@ func Use(api fiber.Router) {
 	// update 需要添加认证
 	router.Post("/:name", mw.Protector, mw.PermissProtectd, Update)
 	// delete 需要添加认证
-	router.Delete("/:name", mw.Protector, mw.PermissProtectd, queryDelete)
+	router.Delete("/:name", mw.Protector, mw.PermissProtectd, Delete)
 	// raw
-	router.Get("/raw/:name", queryRaw)
-	router.Post("/raw/:name", queryRaw)
+	router.Get("/raw/:name", Raw)
+	router.Post("/raw/:name", Raw)
 }
 
 // matched, _ := regexp.MatchString(`pg_*`, nameParam)
@@ -49,8 +49,8 @@ func Insert(c *fiber.Ctx) error {
 	var nameParam = c.Params("name")
 	var entity = models.NewTableStruct(nameParam)
 	c.BodyParser(entity)
-	var query = global.DB.Model(entity)
-	query.Create(entity)
+	var db = global.DB.Model(entity)
+	db.Create(entity)
 	return res.JSON(c, true)
 }
 
@@ -59,47 +59,49 @@ func Update(c *fiber.Ctx) error {
 	var nameParam = c.Params("name")
 	var whereQuery = c.Query("where")
 	var entity = models.NewTableStruct(nameParam)
-	var query = global.DB.Model(entity)
+	var db = global.DB.Model(entity)
 	json.Unmarshal(c.Body(), entity)
 	if whereQuery != "" {
 		var whereMap map[string]interface{}
 		err := json.Unmarshal([]byte(whereQuery), &whereMap)
 		if err == nil {
-			query.Where(whereMap)
+			db.Where(whereMap)
 		} else {
-			query.Where(whereQuery)
+			db.Where(whereQuery)
 		}
 	}
-
-	query.Debug().Updates(entity)
-	return res.JSON(c, true)
-
+	db = db.Updates(entity)
+	if db.RowsAffected > 0 {
+		return res.JSON(c, true)
+	} else {
+		return res.Result(c, 500, false, "修改失败")
+	}
 }
 
-// queryDelete
-func queryDelete(c *fiber.Ctx) error {
+// Delete
+func Delete(c *fiber.Ctx) error {
 	var nameParam = c.Params("name")
 	var whereQuery = c.Query("where")
 	//
 	var entity = models.NewTableStruct(nameParam)
 	json.Unmarshal(c.Body(), entity)
-	var query = global.DB.Table(entity.TableName())
+	var db = global.DB.Table(entity.TableName())
 	//
 	if whereQuery != "" {
 		var whereMap map[string]interface{}
 		err := json.Unmarshal([]byte(whereQuery), &whereMap)
 		if err == nil {
-			query.Where(whereMap)
+			db.Where(whereMap)
 		} else {
-			query.Where(whereQuery)
+			db.Where(whereQuery)
 		}
 	}
-	query.Delete(entity)
+	db.Delete(entity)
 	return res.JSON(c, true)
 }
 
-// queryRaw
-func queryRaw(c *fiber.Ctx) error {
+// Raw
+func Raw(c *fiber.Ctx) error {
 	var nameParam = c.Params("name")
 	var rawSQL tables.RawSQL
 	var result []map[string]interface{}
@@ -116,9 +118,9 @@ func queryRaw(c *fiber.Ctx) error {
 				namedArg = body["namedArg"].(map[string]interface{})
 			}
 		}
-		query := global.DB.Raw(rawSQL.Text, namedArg)
+		db := global.DB.Raw(rawSQL.Text, namedArg)
 		//
-		global.DB.ScanIntoMap(query, &result)
+		global.DB.ScanIntoMap(db, &result)
 	}
 
 	return res.JSON(c, result)
