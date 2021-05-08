@@ -72,11 +72,7 @@ func Update(c *fiber.Ctx) error {
 	}
 
 	query.Debug().Updates(entity)
-	if query.RowsAffected > 1 {
-		return res.JSON(c, true)
-	} else {
-		return res.Result(c, 500, false, "")
-	}
+	return res.JSON(c, true)
 
 }
 
