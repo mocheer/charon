@@ -17,11 +17,11 @@ import (
 func Use(api fiber.Router) {
 	router := api.Group("/upload")
 	// 上传文件
-	router.Post("/file/*", mw.Protector, mw.PermissProtectd, uploadFile)
+	router.Post("/file/*", mw.PermissProtectd, uploadFile)
 	// 上传多个文件
-	router.Post("/files/*", mw.Protector, mw.PermissProtectd, uploadFiles)
+	router.Post("/files/*", mw.PermissProtectd, uploadFiles)
 	// 上传文件夹（支持chrome）
-	router.Post("/folder", mw.Protector, mw.PermissProtectd, uploadFolder)
+	router.Post("/folder", mw.PermissProtectd, uploadFolder)
 }
 
 // uploadFile 上传文件

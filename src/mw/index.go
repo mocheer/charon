@@ -2,7 +2,6 @@ package mw
 
 import (
 	"os"
-	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -19,34 +18,25 @@ import (
 	"github.com/mocheer/pluto/fn"
 )
 
-// initMW 初始化middleware中间件
-func initMW() {
-	//
-	SigningKey = fn.StringBytes(global.Config.Name)
-	// token路由守卫
-	Protector = jwtware.New(jwtware.Config{
-		SigningKey:   SigningKey,
-		ErrorHandler: jwtError,
-	})
-}
-
 // Use 使用所有中间件
 func Use(app *fiber.App) {
-	// 初始化
-	initMW()
-	// /debug/pprof/
-	app.Use(pprof.New())
+	SigningKey = fn.StringBytes(global.Config.Name)
+	// 发环境下支持pprof调试
+	if global.IsDev() {
+		app.Use(pprof.New())
+	}
+	// 日志中间件
+	app.Use(logger.New(logger.Config{
+		Output: os.Stdout,
+	}))
 	// 已经有token验证了
 	// app.Use(csrf.New(csrf.Config{
 	// 	Next: func(c *fiber.Ctx) bool {
 	// 		return c.Path() == `/api/v1/auth/login`
 	// 	},
 	// }))
+	// 安全中间件，包含xss、xframe、contenttype等方面的漏洞防御
 	app.Use(helmet.New())
-	// 日志中间件
-	app.Use(logger.New(logger.Config{
-		Output: os.Stdout,
-	}))
 	// 协商缓存
 	app.Use(etag.New())
 	// 插件有使用顺序，且顺序非常重要，比如说cache需要放到compress后面(这个在2.2.4之后版本已支持)，compresss需要放到业务路由前面等
@@ -54,33 +44,10 @@ func Use(app *fiber.App) {
 	// 发生错误时状态码为500，而且会将错误数据返回到前端
 	app.Use(recover.New())
 	// cors
-	app.Use(cors.New(cors.Config{
-		Next:             nil,
-		AllowOrigins:     "*",
-		AllowMethods:     "GET,POST,HEAD,PUT,DELETE,PATCH",
-		AllowHeaders:     "",
-		AllowCredentials: false,
-		ExposeHeaders:    "",
-		MaxAge:           0, //缓存，单位秒
-	}))
-
-	//
-	app.Use(func(c *fiber.Ctx) error {
-		if strings.HasSuffix(c.Path(), ".js.map") {
-			return c.SendString(`{
-			"version": 3,
-			"sources": [],
-			"names": [],
-			"mappings": "",
-			"file": "",
-			"sourcesContent": [],
-			"sourceRoot": ""
-		}`)
-		}
-		return c.Next()
-	})
+	app.Use(cors.New(global.Config.Cors))
 	//
 	for name, config := range global.Config.Static {
+
 		app.Static(name, config.Dir, fiber.Static{
 			Compress:  true,       //
 			ByteRange: true,       //
@@ -88,12 +55,18 @@ func Use(app *fiber.App) {
 			MaxAge:    clock.Week, // 强缓存时间，单位秒
 			Index:     "index.html",
 		})
+		//
+		// indexHTML := filepath.Join("public", name, "index.html")
+		// app.Get(fmt.Sprintf("%s/*", name), func(c *fiber.Ctx) error {
+		// 	return c.SendFile(indexHTML)
+		// })
 	}
-
+	// 非开发环境下拦截.js.map文件
+	if !global.IsDev() {
+		app.Use(HideJSMap)
+	}
 	// 重定向
 	app.Get("/v/*", func(c *fiber.Ctx) error {
-		// maxAge := strconv.FormatUint(86400*30, 10)
-		// c.Set(fiber.HeaderCacheControl, "public, max-age="+maxAge)
 		return c.SendFile("./public/index.html")
 	})
 
@@ -121,4 +94,16 @@ func Use(app *fiber.App) {
 		Level: compress.LevelBestSpeed, // 1
 	}))
 
+}
+
+// UseProtected
+func UseProtected(app *fiber.App) {
+	// jwt token认证守卫
+	app.Use(jwtware.New(jwtware.Config{
+		Filter: func(c *fiber.Ctx) bool {
+			return c.Method() == "GET"
+		},
+		SigningKey:   SigningKey,
+		ErrorHandler: jwtError,
+	}))
 }

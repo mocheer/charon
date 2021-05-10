@@ -22,11 +22,11 @@ func Use(api fiber.Router) {
 	// select
 	router.Get("/:name", mw.Cache, Select)
 	// insert 需要添加认证
-	router.Put("/:name", mw.Protector, mw.PermissProtectd, Insert)
+	router.Put("/:name", mw.PermissProtectd, Insert)
 	// update 需要添加认证
-	router.Post("/:name", mw.Protector, mw.PermissProtectd, Update)
+	router.Post("/:name", mw.PermissProtectd, Update)
 	// delete 需要添加认证
-	router.Delete("/:name", mw.Protector, mw.PermissProtectd, Delete)
+	router.Delete("/:name", mw.PermissProtectd, Delete)
 	// raw
 	router.Get("/raw/:name", Raw)
 	router.Post("/raw/:name", Raw)

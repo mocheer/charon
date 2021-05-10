@@ -17,7 +17,7 @@ func Use(api fiber.Router) {
 	router := api.Group("/auth")
 	router.Post("/login", login)
 	router.Post("/signup", signup)
-	router.Get("/info", mw.Protector, getUserInfo)
+	router.Get("/info", mw.Protected(), getUserInfo)
 }
 
 // login 登录
@@ -36,6 +36,10 @@ func login(c *fiber.Ctx) error {
 		return res.Result(c, fiber.StatusUnauthorized, "Error on username", err)
 	}
 
+	password, err = DecodePassword(password)
+	if err != nil {
+		return res.Result(c, fiber.StatusUnauthorized, "Error on password", err)
+	}
 	// 这里直接判断原始密码有问题
 	if !CheckPasswordHash(password, user.Password) {
 		return res.Result(c, fiber.StatusUnauthorized, "Invalid password", nil)
@@ -66,10 +70,15 @@ func login(c *fiber.Ctx) error {
 // signup 注册
 func signup(c *fiber.Ctx) error {
 	var input LoginInput
-
+	//
 	if err := c.BodyParser(&input); err != nil {
 		return res.Result(c, fiber.StatusBadRequest, "参数有误", err)
 	}
+	//
+	if len(input.Password) < 6 {
+		return res.Result(c, fiber.StatusBadRequest, "参数有误：密码不应小于6位", nil)
+	}
+	//
 	password := hashAndSalt(input.Password)
 	query := global.DB.Create(tables.User{Name: input.Username, Password: password})
 	//
@@ -83,6 +92,7 @@ func signup(c *fiber.Ctx) error {
 // getUserInfo 获取token中的用户信息
 func getUserInfo(c *fiber.Ctx) error {
 	user := c.Locals("user").(*jwt.Token)
+
 	claims := user.Claims.(jwt.MapClaims)
 	return c.JSON(claims)
 }

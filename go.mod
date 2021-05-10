@@ -5,7 +5,6 @@ go 1.16
 require (
 	github.com/ajstarks/svgo v0.0.0-20210406150507-75cfd577ce75 // indirect
 	github.com/andybalholm/brotli v1.0.2 // indirect
-	github.com/benoitkugler/textlayout v0.0.0-20210506164253-1da095469b09 // indirect
 	github.com/form3tech-oss/jwt-go v3.2.2+incompatible
 	github.com/gofiber/fiber/v2 v2.9.0
 	github.com/gofiber/helmet/v2 v2.1.2

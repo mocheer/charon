@@ -27,6 +27,9 @@ func Init() {
 	v1 := api.Group("/v1")
 	//
 	auth.Use(v1)
+	//
+	mw.UseProtected(app)
+	//
 	pipal.Use(v1)
 	query.Use(v1)
 	upload.Use(v1)

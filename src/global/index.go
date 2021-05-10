@@ -1,6 +1,7 @@
 package global
 
 import (
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/mocheer/pluto/fs"
 	"github.com/mocheer/pluto/logger"
 )
@@ -27,6 +28,15 @@ func Init() {
 				Mode: "history",
 				Dir:  "./public",
 			},
+		},
+		Cors: cors.Config{
+			Next:             nil,
+			AllowOrigins:     "*",
+			AllowMethods:     "GET,POST,HEAD,PUT,DELETE,PATCH",
+			AllowHeaders:     "",
+			AllowCredentials: false,
+			ExposeHeaders:    "",
+			MaxAge:           0, //缓存，单位秒
 		},
 	}
 	// 读取应用配置

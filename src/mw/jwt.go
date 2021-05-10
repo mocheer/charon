@@ -10,13 +10,18 @@ import (
 // SigningKey 密钥
 var SigningKey []byte
 
-// Protected protect routes
-func Protected(config jwtware.Config) fiber.Handler {
-	return jwtware.New(config)
-}
+//
+var protector func(*fiber.Ctx) error
 
-// Protector 全局的认证handler
-var Protector func(*fiber.Ctx) error
+// Protected protect routes
+func Protected() fiber.Handler {
+	if protector == nil {
+		protector = jwtware.New(jwtware.Config{
+			SigningKey:   SigningKey,
+			ErrorHandler: jwtError})
+	}
+	return protector
+}
 
 // PermissProtectd 特殊权限认证 role=1 有权限
 func PermissProtectd(c *fiber.Ctx) error {
