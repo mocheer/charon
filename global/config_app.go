@@ -24,7 +24,7 @@ func (c *AppConfig) IsDev() bool {
 	return c.Mode == `dev`
 }
 
-// FirstPublicDir 第一个静态资源目录
-func (c *AppConfig) FirstPublicDir() string {
+// FirstStaticDir 第一个静态资源目录
+func (c *AppConfig) FirstStaticDir() string {
 	return c.Static[0].Dir
 }
