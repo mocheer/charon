@@ -2,11 +2,9 @@
 *.exe
 # air tmp
 tmp
-docs
 # vendor
 vendor
-public
-config
 # 
-data
-log
+assets
+_*/
+$*/

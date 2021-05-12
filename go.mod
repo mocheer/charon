@@ -17,6 +17,7 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.7 // indirect
 	github.com/mocheer/pluto v0.0.0-20210429095047-c4e6c07bef14
 	github.com/shopspring/decimal v1.2.0 // indirect
+	github.com/sirupsen/logrus v1.4.2
 	github.com/stretchr/testify v1.7.0 // indirect
 	github.com/tdewolff/canvas v0.0.0-20210507174957-44ce152a5327 // direct
 	github.com/twpayne/go-geom v1.4.0

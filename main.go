@@ -1,10 +1,8 @@
 package main
 
 import (
-	_ "net/http/pprof"
-
-	"github.com/mocheer/charon/src/global"
-	"github.com/mocheer/charon/src/router"
+	"github.com/mocheer/charon/global"
+	"github.com/mocheer/charon/router"
 )
 
 func main() {
