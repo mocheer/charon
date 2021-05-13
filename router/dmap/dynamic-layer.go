@@ -12,10 +12,11 @@ import (
 	"sync"
 
 	"github.com/mocheer/charon/global"
-	"github.com/mocheer/charon/model/types"
+	"github.com/mocheer/pluto/calc"
 	"github.com/mocheer/pluto/fn"
 	"github.com/mocheer/pluto/fs"
 	"github.com/mocheer/pluto/img"
+	"github.com/mocheer/pluto/ts"
 	"github.com/tdewolff/canvas"
 	"github.com/tdewolff/canvas/renderers/rasterizer"
 	"github.com/twpayne/go-geom"
@@ -28,9 +29,9 @@ type DynamicLayer struct {
 	id       int
 	canvas   *canvas.Canvas
 	ctx      *canvas.Context
-	tile     *types.Tile
-	minTile  *types.Tile
-	maxTile  *types.Tile
+	tile     *ts.Tile
+	minTile  *ts.Tile
+	maxTile  *ts.Tile
 	numTileX int
 	numTileY int
 	NumTile  int
@@ -47,7 +48,7 @@ type DynamicLayer struct {
 }
 
 // NewDynamicLayer 动态图层服务
-func NewDynamicLayer(id int, tile *types.Tile) *DynamicLayer {
+func NewDynamicLayer(id int, tile *ts.Tile) *DynamicLayer {
 	data := geom.NewGeometryCollection()
 	return &DynamicLayer{
 		id:      id,
@@ -100,8 +101,8 @@ func (layer *DynamicLayer) Draw() (err error) {
 	maxLon := bounds.Max(0)
 	maxLat := bounds.Max(1)
 	//
-	minTilePoint := LonLat2TilePoint(minLon, maxLat, float64(layer.tile.Z)) //左上瓦片
-	maxTilePoint := LonLat2TilePoint(maxLon, minLat, float64(layer.tile.Z)) //右下瓦片
+	minTilePoint := calc.LonLat2TilePoint(minLon, maxLat, float64(layer.tile.Z)) //左上瓦片
+	maxTilePoint := calc.LonLat2TilePoint(maxLon, minLat, float64(layer.tile.Z)) //右下瓦片
 	//
 	if minTilePoint.Offset.X < 16 {
 		minTilePoint.X -= 1
@@ -126,8 +127,8 @@ func (layer *DynamicLayer) Draw() (err error) {
 	layer.numTileY = numTileY
 	layer.NumTile = numTileX * numTileY
 	//
-	layer.minTile = &types.Tile{X: minTilePoint.X, Y: minTilePoint.Y, Z: minTilePoint.Z}
-	layer.maxTile = &types.Tile{X: maxTilePoint.X, Y: maxTilePoint.Y, Z: maxTilePoint.Z}
+	layer.minTile = &ts.Tile{X: minTilePoint.X, Y: minTilePoint.Y, Z: minTilePoint.Z}
+	layer.maxTile = &ts.Tile{X: maxTilePoint.X, Y: maxTilePoint.Y, Z: maxTilePoint.Z}
 	//
 	layer.canvas = canvas.New(float64(numTileX)*256, float64(numTileY)*256)
 	layer.ctx = canvas.NewContext(layer.canvas)
@@ -151,8 +152,8 @@ func (layer *DynamicLayer) Draw() (err error) {
 }
 
 // Coor2Pixel
-func (layer *DynamicLayer) Coor2Pixel(coor geom.Coord) *types.Point {
-	tilePoint := LonLat2TilePoint(coor.X(), coor.Y(), float64(layer.tile.Z))
+func (layer *DynamicLayer) Coor2Pixel(coor geom.Coord) *ts.Point {
+	tilePoint := calc.LonLat2TilePoint(coor.X(), coor.Y(), float64(layer.tile.Z))
 	offset := tilePoint.Offset
 	offset.X += float64(tilePoint.X-layer.minTile.X) * 256
 	offset.Y += float64(tilePoint.Y-layer.minTile.Y) * 256
