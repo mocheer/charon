@@ -1,9 +1,10 @@
 package dmap
 
-import "math"
+import (
+	"path"
+
+	"github.com/mocheer/charon/global"
+)
 
 // 动态图层瓦片格式化字符串
-var ImageTilePathFormat = "assets/_data/dmap/image/%v/%v/%v/%v.png"
-
-//
-var R2D = 180 / math.Pi
+var ImageTilePathFormat = path.Join(global.AssetsDataDir, "dmap/image/%v/%v/%v/%v.png")

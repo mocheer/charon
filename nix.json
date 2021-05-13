@@ -3,12 +3,12 @@
   "scripts":{
     "dev":"air",
     "build":"go build -ldflags \"-s -w\"",
-    "build-dist":"go build -ldflags \"-s -w\" -o dist/{appName}.exe",
     "install":"nssm install {appName} {execPath}/charon.exe",
     "start":"nssm start {appName}",
     "stop":"nssm stop {appName}",
     "remove":"nssm remove {appName} confirm",
     "setup":"nix run install && nix run start",
-    "unsetup":"nix run stop && nix run remove"
+    "unsetup":"nix run stop && nix run remove",
+    "rsa":"nix rsa assets/rsa"
   }
 }

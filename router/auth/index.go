@@ -9,37 +9,39 @@ import (
 	"github.com/mocheer/charon/model/tables"
 	"github.com/mocheer/charon/mw"
 	"github.com/mocheer/charon/res"
+	"github.com/tidwall/gjson"
 )
 
 // Use 初始化 auth 路由
 // @see https://github.com/gofiber/recipes/tree/master/auth-jwt
 func Use(api fiber.Router) {
 	router := api.Group("/auth")
+	// 登录
 	router.Post("/login", login)
+	// 注册
 	router.Post("/signup", signup)
+	// 获取用户信息
 	router.Get("/info", mw.Protected(), getUserInfo)
+	// 获取用于加密用的rsa公钥，用于前端加密
+	router.Get("/rsa", res.HandleTextFile(global.RSA_PublicPemPath))
 }
 
 // login 登录
 func login(c *fiber.Ctx) error {
-
 	var input LoginInput
-
+	//
 	if err := c.BodyParser(&input); err != nil {
 		return res.Result(c, fiber.StatusBadRequest, "Error on login request", err)
 	}
-	username := input.Username
-	password := input.Password
-
+	//
+	plain := DecodeCliper(input.Cipher)
+	username := gjson.Get(plain, "username").String()
+	password := gjson.Get(plain, "password").String()
 	user, err := getUserByUsername(username)
 	if err != nil {
 		return res.Result(c, fiber.StatusUnauthorized, "Error on username", err)
 	}
 
-	password, err = DecodePassword(password)
-	if err != nil {
-		return res.Result(c, fiber.StatusUnauthorized, "Error on password", err)
-	}
 	// 这里直接判断原始密码有问题
 	if !CheckPasswordHash(password, user.Password) {
 		return res.Result(c, fiber.StatusUnauthorized, "Invalid password", nil)
@@ -74,13 +76,17 @@ func signup(c *fiber.Ctx) error {
 	if err := c.BodyParser(&input); err != nil {
 		return res.Result(c, fiber.StatusBadRequest, "参数有误", err)
 	}
+
+	plain := DecodeCliper(input.Cipher)
+	username := gjson.Get(plain, "username").String()
+	pwd := gjson.Get(plain, "password").String()
 	//
-	if len(input.Password) < 6 {
+	if len(pwd) < 6 {
 		return res.Result(c, fiber.StatusBadRequest, "参数有误：密码不应小于6位", nil)
 	}
 	//
-	password := hashAndSalt(input.Password)
-	query := global.DB.Create(tables.User{Name: input.Username, Password: password})
+	password := hashAndSalt(pwd)
+	query := global.DB.Create(tables.User{Name: username, Password: password})
 	//
 	if query.Error != nil {
 		return res.Result(c, fiber.StatusInternalServerError, "注册失败", query.Error)

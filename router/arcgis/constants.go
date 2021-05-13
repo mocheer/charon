@@ -1,7 +1,13 @@
 package arcgis
 
+import (
+	"path"
+
+	"github.com/mocheer/charon/global"
+)
+
 // BaseDirectory arcgis图标的根目录
-const BaseDirectory = "assets/_data/dmap/arcgis"
+var BaseDirectory = path.Join(global.AssetsDataDir, "dmap/arcgis")
 
 // BundlxMaxidx 紧凑型切片v2
 const BundlxMaxidx = 128

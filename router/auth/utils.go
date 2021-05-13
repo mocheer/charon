@@ -3,8 +3,14 @@ package auth
 import (
 	"github.com/mocheer/charon/global"
 	"github.com/mocheer/charon/model/tables"
+	"github.com/mocheer/pluto/ecc"
 	"golang.org/x/crypto/bcrypt"
 )
+
+// DecodeCliper 解析前端密文
+func DecodeCliper(data string) string {
+	return ecc.RSA_DecodeJSEncrypt(data, global.RSA_PrivatePemPath)
+}
 
 // CheckPasswordHash 对比hash密码和输入的密码
 func CheckPasswordHash(password, hash string) bool {

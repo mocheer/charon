@@ -21,7 +21,7 @@ var Config *AppConfig
 
 // IsDev 是否是开发模式
 func (c *AppConfig) IsDev() bool {
-	return c.Mode == `dev`
+	return c.Mode == DevMode
 }
 
 // FirstStaticDir 第一个静态资源目录

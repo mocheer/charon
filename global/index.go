@@ -34,6 +34,8 @@ func Init() {
 	if err != nil {
 		Log.Error("数据库连接失败", err)
 	}
+
+	initRSA()
 	//
 	Log.Info("启动成功")
 }

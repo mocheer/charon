@@ -1,6 +1,7 @@
 # charon
 
 ```bash
-go get github.com/cosmtrek/air 
+go get -u github.com/cosmtrek/air 
+go get -u github.com/mocheer/nix
 ```
 

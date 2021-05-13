@@ -18,7 +18,7 @@ import (
 	"github.com/mocheer/charon/mw"
 	"github.com/mocheer/charon/res"
 	"github.com/mocheer/pluto/fs"
-	"github.com/mocheer/pluto/tm"
+	"github.com/mocheer/pluto/js/window"
 )
 
 // Use 初始化 dmap 路由
@@ -66,7 +66,7 @@ func createImageHandle(c *fiber.Ctx) error {
 			dynamicLayer.Add(feature.Geometry)
 		}
 		dynamicLayer.Draw()
-		cancelInterval := tm.SetInterval(debug.FreeOSMemory, 60)
+		cancelInterval := window.SetInterval(debug.FreeOSMemory, 60)
 		defer cancelInterval()
 		dynamicLayer.SaveTiles().Wait()
 		if dynamicLayer.NumTile < 32 {

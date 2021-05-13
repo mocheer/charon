@@ -4,6 +4,7 @@ import (
 	"math"
 
 	"github.com/mocheer/charon/model/types"
+	"github.com/mocheer/pluto/calc"
 )
 
 // LonLat2Tile
@@ -57,6 +58,6 @@ func Tile2LonLat(tile *types.Tile) *types.Point {
 
 	return &types.Point{
 		X: float64(x)/math.Exp2(float64(z))*360 - 180,
-		Y: (R2D * math.Atan(0.5*(math.Exp(n)-math.Exp(-1.0*n)))),
+		Y: (calc.R2D * math.Atan(0.5*(math.Exp(n)-math.Exp(-1.0*n)))),
 	}
 }

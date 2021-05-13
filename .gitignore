@@ -6,6 +6,7 @@ tmp
 vendor
 # 
 assets
+public
 _*/
 $*/
 .nix/
