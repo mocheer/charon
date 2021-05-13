@@ -15,6 +15,7 @@ import (
 	"github.com/mocheer/charon/model/types"
 	"github.com/mocheer/pluto/fn"
 	"github.com/mocheer/pluto/fs"
+	"github.com/mocheer/pluto/img"
 	"github.com/tdewolff/canvas"
 	"github.com/tdewolff/canvas/renderers/rasterizer"
 	"github.com/twpayne/go-geom"
@@ -227,7 +228,7 @@ func (layer *DynamicLayer) drawCircle(x float64, y float64, r float64) {
 
 // drawImage 绘制图片
 func (layer *DynamicLayer) drawImage(path string, x float64, y float64) {
-	image, err := fs.GetImageFromPath(filepath.Join("./assets", path))
+	image, err := img.FromFile(filepath.Join("./assets", path))
 
 	if err != nil {
 		global.Log.Error(err)

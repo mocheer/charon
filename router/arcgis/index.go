@@ -3,12 +3,11 @@ package arcgis
 import (
 	"path/filepath"
 	"strconv"
-	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/mocheer/charon/model/types"
 	"github.com/mocheer/charon/mw"
-	"github.com/mocheer/charon/mw/res"
+	"github.com/mocheer/charon/res"
 )
 
 // cacheServer
@@ -20,7 +19,7 @@ func Use(api fiber.Router) {
 	// GetCapabilities
 	router.Get("/:name/capabilities", mw.Cache, getCapabilities)
 	// GetTile
-	router.Get("/:name/tile/:z/:y/:x", mw.NewCache(time.Hour*24*30), getTile)
+	router.Get("/:name/tile/:z/:y/:x", mw.CacheControl, getTile)
 	//
 }
 

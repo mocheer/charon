@@ -11,7 +11,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/mocheer/charon/global"
-	"github.com/mocheer/charon/mw/res"
+	"github.com/mocheer/charon/res"
 )
 
 // Use 初始化 query 路由

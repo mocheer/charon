@@ -8,7 +8,7 @@ import (
 
 	"github.com/mocheer/charon/global"
 	"github.com/mocheer/charon/mw"
-	"github.com/mocheer/charon/mw/res"
+	"github.com/mocheer/charon/res"
 	"github.com/mocheer/pluto/fs"
 )
 

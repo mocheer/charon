@@ -108,9 +108,9 @@ func Use(app *fiber.App) {
 }
 
 // UseProtected
-func UseProtected(app *fiber.App) {
+func UseProtected(r fiber.Router) {
 	// jwt token认证守卫
-	app.Use(jwtware.New(jwtware.Config{
+	r.Use(jwtware.New(jwtware.Config{
 		Filter: func(c *fiber.Ctx) bool {
 			return c.Method() == "GET" || strings.HasPrefix(c.Path(), `/api/v1/query/raw`)
 		},

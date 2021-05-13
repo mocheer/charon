@@ -6,13 +6,14 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cache"
+	"github.com/mocheer/pluto/clock"
 )
 
 // Cache 全局缓存
 var Cache = NewCache(time.Hour * 24)
 
 // CacheControl 全局的前端强缓存
-var CacheControl = NewCacheControl(31536000)
+var CacheControl = NewCacheControl(clock.Month)
 
 // NewCache 创建缓存
 func NewCache(exp time.Duration) func(*fiber.Ctx) error {

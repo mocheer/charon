@@ -24,7 +24,7 @@ func Init() {
 	err := fs.ReadJSON(AppConfigPath, Config)
 	if err != nil {
 		Log.Info("配置文件不存在，重新生成")
-		err = fs.WriteJSON(AppConfigPath, Config)
+		err = fs.SaveJSON(AppConfigPath, Config)
 		if err != nil {
 			Log.Info("生成配置文件失败", err)
 		}
