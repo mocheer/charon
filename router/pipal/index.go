@@ -21,7 +21,6 @@ func Use(api fiber.Router) {
 
 // queryAppConfig
 func queryAppConfig(c *fiber.Ctx) error {
-
 	name := c.Params("name")
 	//
 	var appConfig tables.AppConfig

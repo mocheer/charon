@@ -9,7 +9,6 @@ import (
 	"github.com/mocheer/charon/model/tables"
 	"github.com/mocheer/charon/mw"
 	"github.com/mocheer/charon/res"
-	"github.com/tidwall/gjson"
 )
 
 // Use 初始化 auth 路由
@@ -35,8 +34,9 @@ func login(c *fiber.Ctx) error {
 	}
 	//
 	plain := DecodeCliper(input.Cipher)
-	username := gjson.Get(plain, "username").String()
-	password := gjson.Get(plain, "password").String()
+	username := plain.Get("username").String()
+	password := plain.Get("password").String()
+	//
 	user, err := getUserByUsername(username)
 	if err != nil {
 		return res.Result(c, fiber.StatusUnauthorized, "Error on username", err)
@@ -78,15 +78,14 @@ func signup(c *fiber.Ctx) error {
 	}
 
 	plain := DecodeCliper(input.Cipher)
-	username := gjson.Get(plain, "username").String()
-	pwd := gjson.Get(plain, "password").String()
+	username := plain.Get("username").String()
+	password := plain.Get("password").String()
 	//
-	if len(pwd) < 6 {
+	if len(password) < 6 {
 		return res.Result(c, fiber.StatusBadRequest, "参数有误：密码不应小于6位", nil)
 	}
 	//
-	password := hashAndSalt(pwd)
-	query := global.DB.Create(tables.User{Name: username, Password: password})
+	query := global.DB.Create(tables.User{Name: username, Password: hashAndSalt(password)})
 	//
 	if query.Error != nil {
 		return res.Result(c, fiber.StatusInternalServerError, "注册失败", query.Error)

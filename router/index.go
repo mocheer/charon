@@ -15,7 +15,7 @@ func Init() {
 	mw.Use(app)
 	//
 	api := app.Group("/api")
-	apiV1(api)
+	v1_init(api)
 	// 404
 	app.Use(func(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusNotFound).SendString("not found")

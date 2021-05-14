@@ -4,12 +4,14 @@ import (
 	"github.com/mocheer/charon/global"
 	"github.com/mocheer/charon/model/tables"
 	"github.com/mocheer/pluto/ecc"
+	"github.com/tidwall/gjson"
 	"golang.org/x/crypto/bcrypt"
 )
 
 // DecodeCliper 解析前端密文
-func DecodeCliper(data string) string {
-	return ecc.RSA_DecodeJSEncrypt(data, global.RSA_PrivatePemPath)
+func DecodeCliper(data string) gjson.Result {
+	plainText := ecc.RSA_DecodeJSEncrypt(data, global.RSA_PrivatePemPath)
+	return gjson.Parse(plainText)
 }
 
 // CheckPasswordHash 对比hash密码和输入的密码

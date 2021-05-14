@@ -13,8 +13,8 @@ import (
 	"github.com/mocheer/charon/router/upload"
 )
 
-// apiV1 /api/v1/xxx/xx
-func apiV1(api fiber.Router) {
+// v1_init /api/v1/xxx/xx
+func v1_init(api fiber.Router) {
 	v1 := api.Group("/v1")
 	//
 	auth.Use(v1)
