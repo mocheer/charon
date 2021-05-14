@@ -1,6 +1,6 @@
 package dmap
 
-import "github.com/mocheer/charon/model/orm"
+import "github.com/mocheer/charon/orm"
 
 // @see https://github.com/shengzheng1981/green-gis-server
 // Bbox 视野范围
@@ -13,7 +13,7 @@ type Bbox struct {
 
 // QueryParams query服务的输入参数
 type QueryParams struct {
-	orm.SelectBuilder
+	orm.SelectArgs
 	GeometryPrecision int    `json:"geometryPrecision"` //几何数据精度
 	F                 string `json:"f"`                 //返回的数据格式
 }

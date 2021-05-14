@@ -5,8 +5,8 @@ import (
 
 	"github.com/mocheer/charon/model"
 	"github.com/mocheer/charon/mw"
+	"github.com/mocheer/charon/req"
 
-	"github.com/mocheer/charon/model/orm"
 	"github.com/mocheer/charon/model/tables"
 
 	"github.com/gofiber/fiber/v2"
@@ -35,47 +35,25 @@ func Use(api fiber.Router) {
 // matched, _ := regexp.MatchString(`pg_*`, nameParam)
 // Select
 func Select(c *fiber.Ctx) error {
-	var builder = &orm.SelectBuilder{}
-	if err := c.QueryParser(builder); err != nil {
-		return err
-	}
-	builder.Name = c.Params("name")
-	result := builder.Query()
+	args := req.MustParseSelectArgs(c)
+	args.Name = c.Params("name")
+	result := req.Engine().Query(args)
 	return res.JSON(c, result)
 }
 
 // Insert 增加
 func Insert(c *fiber.Ctx) error {
 	var nameParam = c.Params("name")
-	var entity = model.NewTableStruct(nameParam)
-	c.BodyParser(entity)
-	var db = global.DB.Model(entity)
-	db.Create(entity)
-	return res.JSON(c, true)
+	successed := req.Engine().Model(nameParam).Create(c.Body()).Success()
+	return res.JSON(c, successed)
 }
 
 // Update 修改
 func Update(c *fiber.Ctx) error {
 	var nameParam = c.Params("name")
 	var whereQuery = c.Query("where")
-	var entity = model.NewTableStruct(nameParam)
-	var db = global.DB.Model(entity)
-	json.Unmarshal(c.Body(), entity)
-	if whereQuery != "" {
-		var whereMap map[string]interface{}
-		err := json.Unmarshal([]byte(whereQuery), &whereMap)
-		if err == nil {
-			db.Where(whereMap)
-		} else {
-			db.Where(whereQuery)
-		}
-	}
-	db = db.Updates(entity)
-	if db.RowsAffected > 0 {
-		return res.JSON(c, true)
-	} else {
-		return res.Result(c, 500, false, "修改失败")
-	}
+	successed := req.Engine().Model(nameParam).Where(whereQuery).Updates(c.Body()).Success()
+	return res.JSON(c, successed)
 }
 
 // Delete
@@ -118,9 +96,8 @@ func Raw(c *fiber.Ctx) error {
 				namedArg = body["namedArg"].(map[string]interface{})
 			}
 		}
-		db := global.DB.Raw(rawSQL.Text, namedArg)
-		//
-		global.DB.ScanIntoMap(db, &result)
+
+		req.Engine().Raw(rawSQL.Text, namedArg).ScanIntoMap(&result)
 	}
 
 	return res.JSON(c, result)

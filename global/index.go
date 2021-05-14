@@ -1,16 +1,20 @@
 package global
 
 import (
+	"github.com/mocheer/charon/cts"
 	"github.com/mocheer/pluto/fs"
 )
 
-func Init() {
+// 开发模式
+var IS_DEV bool
+
+func Init(mode string) {
+	IS_DEV = mode == "" || mode == cts.DevMode
 	// 初始化日志
 	Log.Init()
 	// 初始化配置
 	Config = &AppConfig{
 		Name: "charon",
-		Mode: "production",
 		Port: ":9212",
 		Static: []StaticConfig{
 			{
@@ -21,10 +25,10 @@ func Init() {
 		},
 	}
 	// 读取应用配置
-	err := fs.ReadJSON(AppConfigPath, Config)
+	err := fs.ReadJSON(cts.AppConfigPath, Config)
 	if err != nil {
 		Log.Info("配置文件不存在，重新生成")
-		err = fs.SaveJSON(AppConfigPath, Config)
+		err = fs.SaveJSON(cts.AppConfigPath, Config)
 		if err != nil {
 			Log.Info("生成配置文件失败", err)
 		}
@@ -37,5 +41,9 @@ func Init() {
 
 	initRSA()
 	//
-	Log.Info("启动成功")
+	if IS_DEV {
+		Log.Info("启动开发模式成功")
+	} else {
+		Log.Info("启动产品模式成功")
+	}
 }

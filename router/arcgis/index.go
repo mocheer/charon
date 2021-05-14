@@ -52,6 +52,7 @@ func getTile(c *fiber.Ctx) error {
 		data, err := server.ReadTile(ts.Tile{
 			Z: z, Y: y, X: x,
 		})
+
 		if err == nil {
 			c.Type(server.TileFormat)
 			return c.Send(data)

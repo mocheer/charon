@@ -23,11 +23,7 @@ import (
 
 // Use 使用所有中间件
 func Use(app *fiber.App) {
-	SigningKey = fn.StringBytes(global.Config.Name)
-	// 发环境下支持pprof调试
-	if global.Config.IsDev() {
-		app.Use(pprof.New())
-	}
+	SigningKey = fn.String2Bytes(global.Config.Name)
 	// 日志中间件
 	app.Use(logger.New(logger.Config{
 		Output: os.Stdout,
@@ -40,13 +36,12 @@ func Use(app *fiber.App) {
 	// }))
 	// 安全中间件，包含xss、xframe、contenttype等方面的漏洞防御
 	app.Use(helmet.New())
-	// 协商缓存
-	app.Use(etag.New())
+
 	// 插件有使用顺序，且顺序非常重要，比如说cache需要放到compress后面(这个在2.2.4之后版本已支持)，compresss需要放到业务路由前面等
 	// recover 中间件，防止因为某个路由的错误导致整个应用崩溃
 	// 发生错误时状态码为500，而且会将错误数据返回到前端
 	app.Use(recover.New(recover.Config{
-		EnableStackTrace: global.Config.IsDev(),
+		EnableStackTrace: global.IS_DEV,
 	}))
 	// cors
 	app.Use(cors.New(cors.Config{
@@ -58,10 +53,14 @@ func Use(app *fiber.App) {
 		MaxAge:           0, //缓存，单位秒
 	}))
 	//
-
-	// 非开发环境下拦截.js.map文件
-	if !global.Config.IsDev() {
+	if !global.IS_DEV {
+		// 生产环境下拦截.js.map文件
 		app.Use(HideJSMap)
+		// 协商缓存
+		app.Use(etag.New())
+	} else {
+		// 开发环境下支持pprof调试
+		app.Use(pprof.New())
 	}
 
 	for index, config := range global.Config.Static {

@@ -12,10 +12,11 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/limiter"
 
 	"github.com/mocheer/charon/global"
-	"github.com/mocheer/charon/model/orm"
 	"github.com/mocheer/charon/model/tables"
 	"github.com/mocheer/charon/model/types"
 	"github.com/mocheer/charon/mw"
+	"github.com/mocheer/charon/orm"
+	"github.com/mocheer/charon/req"
 	"github.com/mocheer/charon/res"
 	"github.com/mocheer/pluto/fs"
 	"github.com/mocheer/pluto/js/window"
@@ -42,11 +43,13 @@ func createImageHandle(c *fiber.Ctx) error {
 	id, _ := strconv.Atoi(idParam)
 	z, _ := strconv.Atoi(zParam)
 	//
-	builder := &orm.SelectBuilder{}
-	builder.Name = "layer"
-	builder.Mode = "first"
-	builder.Where = fmt.Sprintf("id=%s", idParam)
-	layerInfo := builder.Query()
+
+	args := &orm.SelectArgs{}
+	args.Name = "layer"
+	args.Mode = "first"
+	args.Where = fmt.Sprintf("id=%s", idParam)
+	layerInfo := req.Engine().Query(args)
+	fmt.Println(layerInfo)
 	layer := layerInfo.(*tables.DmapLayer)
 	//
 	dynamicLayer := NewDynamicLayer(id, &ts.Tile{
@@ -55,14 +58,13 @@ func createImageHandle(c *fiber.Ctx) error {
 	dynamicLayer.SetOptions(layer.Options)
 	//
 	if dynamicLayer != nil {
-		builder := &orm.SelectBuilder{}
-		builder.Name = "feature"
-		builder.Mode = "find"
-		builder.Where = fmt.Sprintf("layer_id=%s", idParam)
+		args := &orm.SelectArgs{}
+		args.Name = "feature"
+		args.Mode = "find"
+		args.Where = fmt.Sprintf("layer_id=%s", idParam)
 
-		result := builder.Query()
+		result := req.Engine().Query(args)
 		features := result.(*[]tables.DmapFeature)
-
 		for _, feature := range *features {
 			dynamicLayer.Add(feature.Geometry)
 		}
@@ -99,11 +101,11 @@ func imageTileHandle(c *fiber.Ctx) error {
 	y, _ := strconv.Atoi(yParam)
 	z, _ := strconv.Atoi(zParam)
 	//
-	builder := &orm.SelectBuilder{}
-	builder.Name = "layer"
-	builder.Mode = "first"
-	builder.Where = fmt.Sprintf("id=%s", idParam)
-	layerInfo := builder.Query()
+	args := &orm.SelectArgs{}
+	args.Name = "layer"
+	args.Mode = "first"
+	args.Where = fmt.Sprintf("id=%s", idParam)
+	layerInfo := req.Engine().Query(args)
 	layer := layerInfo.(*tables.DmapLayer)
 	//
 	dynamicLayer := NewDynamicLayer(id, &ts.Tile{
@@ -112,12 +114,12 @@ func imageTileHandle(c *fiber.Ctx) error {
 	dynamicLayer.SetOptions(layer.Options)
 	//
 	if dynamicLayer != nil {
-		builder := &orm.SelectBuilder{}
-		builder.Name = "feature"
-		builder.Mode = "find"
-		builder.Where = fmt.Sprintf("layer_id=%s", idParam)
+		args := &orm.SelectArgs{}
+		args.Name = "feature"
+		args.Mode = "find"
+		args.Where = fmt.Sprintf("layer_id=%s", idParam)
 
-		result := builder.Query()
+		result := req.Engine().Query(args)
 		features := result.(*[]tables.DmapFeature)
 
 		for _, feature := range *features {
@@ -136,12 +138,12 @@ func imageTileHandle(c *fiber.Ctx) error {
 // layerHandle
 func layerHandle(c *fiber.Ctx) error {
 	idParam := c.Params("id")
-	builder := &orm.SelectBuilder{}
-	builder.Name = "layer"
-	builder.Mode = "first"
-	builder.Where = fmt.Sprintf("id=%s", idParam)
-	builder.Select = "crs,extent,id,name,options,type,properties,array_to_json(array(select row_to_json(e) from (select * from pipal.dmap_layer where parent_id = 1)e)) as items"
-	result := builder.Query()
+	args := &orm.SelectArgs{}
+	args.Name = "layer"
+	args.Mode = "first"
+	args.Where = fmt.Sprintf("id=%s", idParam)
+	args.Select = fmt.Sprintf("crs,extent,id,name,options,type,properties,array_to_json(array(select row_to_json(e) from (select * from pipal.dmap_layer where parent_id = %s)e)) as items", idParam)
+	result := req.Engine().Query(args)
 	//
 	return res.JSON(c, result)
 }
@@ -162,32 +164,32 @@ func featureHandle(c *fiber.Ctx) error {
 // featureHandle2 要素服务
 func featureHandle2(c *fiber.Ctx) error {
 	id := c.Params("id")
-	builder := &orm.SelectBuilder{}
-	err := c.QueryParser(builder)
+	args := &orm.SelectArgs{}
+	err := c.QueryParser(args)
 	if err != nil {
 		return err
 	}
-	builder.Name = "feature"
-	builder.Mode = "find"
+	args.Name = "feature"
+	args.Mode = "find"
 
-	if builder.Where != "" {
+	if args.Where != "" {
 		var whereMap map[string]interface{}
-		err := json.Unmarshal([]byte(builder.Where), &whereMap)
+		err := json.Unmarshal([]byte(args.Where), &whereMap)
 		if err == nil {
 			whereArray := []string{}
 			for name, val := range whereMap {
 				str := fmt.Sprintf("properties->>'%s'='%s'", name, val)
 				whereArray = append(whereArray, str)
 			}
-			builder.Where = fmt.Sprintf("layer_id=%s and %s", id, strings.Join(whereArray, " and "))
+			args.Where = fmt.Sprintf("layer_id=%s and %s", id, strings.Join(whereArray, " and "))
 		} else {
-			builder.Where = fmt.Sprintf("layer_id=%s and %s", id, builder.Where)
+			args.Where = fmt.Sprintf("layer_id=%s and %s", id, args.Where)
 		}
 	} else {
-		builder.Where = fmt.Sprintf("layer_id=%s", id)
+		args.Where = fmt.Sprintf("layer_id=%s", id)
 	}
 	//
-	result := builder.Query()
+	result := req.Engine().Query(args)
 	return res.JSON(c, result)
 }
 

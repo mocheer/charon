@@ -39,6 +39,6 @@ func NewCache(exp time.Duration) func(*fiber.Ctx) error {
 func NewCacheControl(maxAge int) func(*fiber.Ctx) error {
 	return func(c *fiber.Ctx) error {
 		c.Set(fiber.HeaderCacheControl, fmt.Sprintf("public, max-age=%d", maxAge))
-		return nil
+		return c.Next()
 	}
 }

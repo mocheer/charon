@@ -5,6 +5,8 @@ import (
 
 	jwt "github.com/form3tech-oss/jwt-go"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/limiter"
+	"github.com/mocheer/charon/cts"
 	"github.com/mocheer/charon/global"
 	"github.com/mocheer/charon/model/tables"
 	"github.com/mocheer/charon/mw"
@@ -16,13 +18,13 @@ import (
 func Use(api fiber.Router) {
 	router := api.Group("/auth")
 	// 登录
-	router.Post("/login", login)
+	router.Post("/login", mw.NewLimiter(limiter.Config{Max: 3, Expiration: 10 * time.Second}), login)
 	// 注册
 	router.Post("/signup", signup)
 	// 获取用户信息
 	router.Get("/info", mw.Protected(), getUserInfo)
 	// 获取用于加密用的rsa公钥，用于前端加密
-	router.Get("/rsa", res.HandleTextFile(global.RSA_PublicPemPath))
+	router.Get("/rsa", res.HandleTextFile(cts.RSA_PublicPemPath))
 }
 
 // login 登录

@@ -20,7 +20,7 @@ require (
 	github.com/sirupsen/logrus v1.4.2
 	github.com/stretchr/testify v1.7.0 // indirect
 	github.com/tdewolff/canvas v0.0.0-20210507174957-44ce152a5327 // direct
-	github.com/tidwall/gjson v1.7.5 // indirect
+	github.com/tidwall/gjson v1.7.5
 	github.com/twpayne/go-geom v1.4.0
 	github.com/valyala/fasthttp v1.24.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect

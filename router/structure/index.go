@@ -5,8 +5,8 @@ import (
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/mocheer/charon/global"
 	"github.com/mocheer/charon/model"
+	"github.com/mocheer/charon/req"
 )
 
 // Use 初始化 pipal 路由
@@ -19,23 +19,22 @@ func Use(api fiber.Router) {
 
 func queryTable(c *fiber.Ctx) error {
 	var result []map[string]interface{}
-	var query = global.DB.Raw(`
-SELECT 
-tb.tablename as tablename,
-a.attname AS columnname,
-t.typname AS type
-FROM
-pg_class as c,
-pg_attribute as a, 
-pg_type as t,
-(select tablename from pg_tables where schemaname = @schema) as tb
-WHERE  a.attnum > 0 
-and a.attrelid = c.oid
-and a.atttypid = t.oid
-and c.relname = tb.tablename 
-order by tablename
-`, map[string]interface{}{"schema": "pipal"})
-	global.DB.ScanIntoMap(query, &result)
+	req.Engine().Raw(`
+	SELECT 
+	tb.tablename as tablename,
+	a.attname AS columnname,
+	t.typname AS type
+	FROM
+	pg_class as c,
+	pg_attribute as a, 
+	pg_type as t,
+	(select tablename from pg_tables where schemaname = @schema) as tb
+	WHERE  a.attnum > 0 
+	and a.attrelid = c.oid
+	and a.atttypid = t.oid
+	and c.relname = tb.tablename 
+	order by tablename
+	`, map[string]interface{}{"schema": "pipal"}).ScanIntoMap(&result)
 	var str = ""
 	for tableName, ctMap := range result {
 		str += fmt.Sprintf("type %d struct {\n", tableName)

@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"github.com/mocheer/charon/cts"
 	"github.com/mocheer/charon/global"
 	"github.com/mocheer/charon/model/tables"
 	"github.com/mocheer/pluto/ecc"
@@ -10,7 +11,7 @@ import (
 
 // DecodeCliper 解析前端密文
 func DecodeCliper(data string) gjson.Result {
-	plainText := ecc.RSA_DecodeJSEncrypt(data, global.RSA_PrivatePemPath)
+	plainText := ecc.RSA_DecodeJSEncrypt(data, cts.RSA_PrivatePemPath)
 	return gjson.Parse(plainText)
 }
 

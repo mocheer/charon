@@ -229,7 +229,7 @@ func (layer *DynamicLayer) drawCircle(x float64, y float64, r float64) {
 
 // drawImage 绘制图片
 func (layer *DynamicLayer) drawImage(path string, x float64, y float64) {
-	image, err := img.FromFile(filepath.Join("./assets", path))
+	image, err := img.FromFile(filepath.Join(global.Config.FirstStaticDir(), path))
 
 	if err != nil {
 		global.Log.Error(err)
