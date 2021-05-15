@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/mocheer/charon/model"
+	"github.com/mocheer/charon/orm"
 	"github.com/mocheer/charon/req"
 )
 
@@ -40,7 +40,7 @@ func queryTable(c *fiber.Ctx) error {
 		str += fmt.Sprintf("type %d struct {\n", tableName)
 		for colName, coltype := range ctMap {
 			//translate to go struct foramt
-			retype := model.PgTypeMap[coltype.(string)]
+			retype := orm.PgTypeMap[coltype.(string)]
 			if retype == "" {
 				retype = coltype.(string)
 			}
@@ -48,7 +48,7 @@ func queryTable(c *fiber.Ctx) error {
 			vname := strings.ToUpper(jsonName[0:1]) + jsonName[1:]
 			str += fmt.Sprintf("  %-10s %-15s `json:\"%s\"`\n", vname, retype, jsonName)
 			//translate to typescript format
-			retype = model.PgTypeMap[coltype.(string)]
+			retype = orm.PgTypeMap[coltype.(string)]
 			if retype == "" {
 				retype = coltype.(string)
 			}

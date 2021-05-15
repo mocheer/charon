@@ -10,6 +10,9 @@ import (
 
 func Engine() *orm.Wrapper {
 	ctx := global.DB
+	if global.IS_DEV {
+		ctx = ctx.Debug() // debug 会启动一个新的会话，不能在model之后
+	}
 	return &orm.Wrapper{
 		Ctx: ctx,
 	}

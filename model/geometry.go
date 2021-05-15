@@ -1,4 +1,4 @@
-package types
+package model
 
 type Geometry struct {
 	X, Y int

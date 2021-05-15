@@ -3,7 +3,7 @@ package auth
 import (
 	"github.com/mocheer/charon/cts"
 	"github.com/mocheer/charon/global"
-	"github.com/mocheer/charon/model/tables"
+	"github.com/mocheer/charon/orm/tables"
 	"github.com/mocheer/pluto/ecc"
 	"github.com/tidwall/gjson"
 	"golang.org/x/crypto/bcrypt"

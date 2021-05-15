@@ -3,11 +3,10 @@ package query
 import (
 	"encoding/json"
 
-	"github.com/mocheer/charon/model"
 	"github.com/mocheer/charon/mw"
 	"github.com/mocheer/charon/req"
 
-	"github.com/mocheer/charon/model/tables"
+	"github.com/mocheer/charon/orm/tables"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/mocheer/charon/global"
@@ -60,21 +59,8 @@ func Update(c *fiber.Ctx) error {
 func Delete(c *fiber.Ctx) error {
 	var nameParam = c.Params("name")
 	var whereQuery = c.Query("where")
-	//
-	var entity = model.NewTableStruct(nameParam)
-	json.Unmarshal(c.Body(), entity)
-	var db = global.DB.Table(entity.TableName())
-	//
-	if whereQuery != "" {
-		var whereMap map[string]interface{}
-		err := json.Unmarshal([]byte(whereQuery), &whereMap)
-		if err == nil {
-			db.Where(whereMap)
-		} else {
-			db.Where(whereQuery)
-		}
-	}
-	db.Delete(entity)
+	// table
+	req.Engine().Model(nameParam).Where(whereQuery).Delete(c.Body()).Success()
 	return res.JSON(c, true)
 }
 

@@ -1,4 +1,4 @@
-package ormtypes
+package tabletypes
 
 import (
 	"database/sql/driver"

@@ -1,4 +1,4 @@
-package model
+package orm
 
 //postgresql type -> go type
 var PgTypeMap = map[string]string{

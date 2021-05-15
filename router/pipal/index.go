@@ -5,8 +5,8 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/mocheer/charon/global"
-	"github.com/mocheer/charon/model/tables"
 	"github.com/mocheer/charon/mw"
+	"github.com/mocheer/charon/orm/tables"
 	"github.com/mocheer/charon/res"
 )
 

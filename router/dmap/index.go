@@ -12,10 +12,10 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/limiter"
 
 	"github.com/mocheer/charon/global"
-	"github.com/mocheer/charon/model/tables"
-	"github.com/mocheer/charon/model/types"
+	"github.com/mocheer/charon/model"
 	"github.com/mocheer/charon/mw"
 	"github.com/mocheer/charon/orm"
+	"github.com/mocheer/charon/orm/tables"
 	"github.com/mocheer/charon/req"
 	"github.com/mocheer/charon/res"
 	"github.com/mocheer/pluto/fs"
@@ -151,7 +151,8 @@ func layerHandle(c *fiber.Ctx) error {
 // featureHandle 要素服务
 func featureHandle(c *fiber.Ctx) error {
 	idParam := c.Params("id")
-	result := &[]types.GeoFeature{}
+
+	result := &[]model.GeoFeature{}
 	global.DB.Raw(`select row.geojson->>'type' as type , row.geojson->'coordinates' as coordinates , row.properties from (select st_asgeojson(geometry,4)::jsonb as geojson,properties from pipal.dmap_feature where layer_id = ?)row `, idParam).Scan(result)
 	//
 	return res.JSON(c, &map[string]interface{}{

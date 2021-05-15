@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/mocheer/charon/global"
-	"github.com/mocheer/charon/model"
 	"github.com/mocheer/pluto/fn"
 	"github.com/mocheer/pluto/ref"
 	"github.com/tidwall/gjson"
@@ -18,8 +17,28 @@ type Wrapper struct {
 
 // Model 设置数据模型
 func (o *Wrapper) Model(name string) *Wrapper {
-	o.Ctx = o.Ctx.Model(model.NewTableStruct(name))
+	o.Ctx = o.Ctx.Model(TableMap[name])
 	return o
+}
+
+// NewModel 实例化数据模型
+func (o *Wrapper) NewModel() interface{} {
+	return ref.New(o.Ctx.Statement.Model)
+}
+
+// NewModelSlice 实例化数据模型集合
+func (o *Wrapper) NewModelSlice() interface{} {
+	return ref.NewSlice(o.Ctx.Statement.Model)
+}
+
+// NewEntity 实例化数据模型并赋值
+func (o *Wrapper) NewEntity(data []byte) interface{} {
+	entity := o.NewModel()
+	err := json.Unmarshal([]byte(data), entity)
+	if err != nil {
+		panic(err)
+	}
+	return entity
 }
 
 // Select 字段选择
@@ -63,7 +82,7 @@ func (o *Wrapper) Not(data string) *Wrapper {
 	return o
 }
 
-//
+// Order 排序
 func (o *Wrapper) Order(data string) *Wrapper {
 	if data != "" {
 		o.Ctx.Order(data)
@@ -71,6 +90,7 @@ func (o *Wrapper) Order(data string) *Wrapper {
 	return o
 }
 
+// Limit 限制
 func (o *Wrapper) Limit(data int) *Wrapper {
 	if data != 0 {
 		o.Ctx.Limit(data)
@@ -79,6 +99,7 @@ func (o *Wrapper) Limit(data int) *Wrapper {
 	return o
 }
 
+// Offset 偏移
 func (o *Wrapper) Offset(data int) *Wrapper {
 	if data != 0 {
 		o.Ctx.Offset(data)
@@ -86,47 +107,45 @@ func (o *Wrapper) Offset(data int) *Wrapper {
 	return o
 }
 
-//
+// Query 查询
 func (o *Wrapper) Query(args *SelectArgs) interface{} {
-	o.Model(args.Name).Select(args.Select).Joins(args.Joins).Where(args.Where).Not(args.Not).Order(args.Order).Limit(args.Limit).Offset(args.Offset)
-	//
-	entity := model.NewTableStruct(args.Name)
-	switch args.Mode {
-	case "first":
-		o.Ctx.First(entity)
-		return entity
-	case "last":
-		o.Ctx.Last(entity)
-		return entity
-	case "find":
-		var result = model.NewTableStructArray(args.Name)
-		o.Ctx.Find(result)
-		return result
-	default:
-		var result []map[string]interface{}
-		o.ScanIntoMap(&result)
-		return result
-	}
+	return o.Model(args.Name).Select(args.Select).Joins(args.Joins).Where(args.Where).Not(args.Not).Order(args.Order).Limit(args.Limit).Offset(args.Offset).GetData(args.Mode)
 }
 
-func (o *Wrapper) NewModelEntity(data []byte) interface{} {
-	entity := ref.New(o.Ctx.Statement.Model)
-	err := json.Unmarshal([]byte(data), entity)
-	if err != nil {
-		panic(err)
+// GetData 查询
+func (o *Wrapper) GetData(mode string) (data interface{}) {
+	switch mode {
+	case "first":
+		data = o.NewModel()
+		o.Ctx.First(data)
+	case "last":
+		data := o.NewModel()
+		o.Ctx.Last(data)
+	case "take":
+		data := o.NewModel()
+		o.Ctx.Take(data)
+	default: //"find"
+		data = o.NewModelSlice()
+		o.Ctx.Find(data)
 	}
-	return entity
+	return
 }
 
 // Create 创建
 func (o *Wrapper) Create(data []byte) *Wrapper {
-	o.Ctx = o.Ctx.Create(o.NewModelEntity(data)) //RowsAffected 才能生效
+	o.Ctx = o.Ctx.Create(o.NewEntity(data)) //RowsAffected 才能生效
 	return o
 }
 
 // Update 修改
 func (o *Wrapper) Updates(data []byte) *Wrapper {
-	o.Ctx = o.Ctx.Updates(o.NewModelEntity(data)) //RowsAffected 才能生效
+	o.Ctx = o.Ctx.Updates(o.NewEntity(data)) //RowsAffected 才能生效
+	return o
+}
+
+// Update 修改
+func (o *Wrapper) Delete(data []byte) *Wrapper {
+	o.Ctx = o.Ctx.Delete(o.NewEntity(data)) //RowsAffected 才能生效
 	return o
 }
 
@@ -142,6 +161,8 @@ func (o *Wrapper) Success() bool {
 }
 
 // ScanIntoMap 扫描数据
+// var result []map[string]interface{}
+// o.ScanIntoMap(&result)
 func (o *Wrapper) ScanIntoMap(data *[]map[string]interface{}) {
 	rows, err := o.Ctx.Rows()
 	result := *data
