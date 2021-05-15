@@ -8,9 +8,9 @@ import (
 	"time"
 
 	"github.com/mocheer/charon/cts"
-	"github.com/mocheer/pluto/clock"
 	"github.com/mocheer/pluto/fs"
 	"github.com/mocheer/pluto/js/window"
+	"github.com/mocheer/pluto/ts/clock"
 	"github.com/sirupsen/logrus"
 )
 

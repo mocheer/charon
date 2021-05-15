@@ -1,11 +1,11 @@
 root = "."
-tmp_dir = "$tmp"
+tmp_dir = "assets/tmp"
 
 [build]
-  bin = "$tmp\\main.exe"
-  cmd = "go build -o ./$tmp/main.exe ."
+  bin = "assets\\tmp\\main.exe"
+  cmd = "go build -o ./assets/tmp/main.exe ."
   delay = 1000
-  exclude_dir = ["vendor","$tmp","assets", "public"]
+  exclude_dir = ["vendor","assets", "public"]
   exclude_file = []
   exclude_regex = []
   exclude_unchanged = false

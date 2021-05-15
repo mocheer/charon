@@ -12,9 +12,9 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/limiter"
 
 	"github.com/mocheer/charon/global"
-	"github.com/mocheer/charon/model"
 	"github.com/mocheer/charon/mw"
 	"github.com/mocheer/charon/orm"
+	"github.com/mocheer/charon/orm/model"
 	"github.com/mocheer/charon/orm/tables"
 	"github.com/mocheer/charon/req"
 	"github.com/mocheer/charon/res"

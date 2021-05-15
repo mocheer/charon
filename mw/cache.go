@@ -6,7 +6,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cache"
-	"github.com/mocheer/pluto/clock"
+	"github.com/mocheer/pluto/ts/clock"
 )
 
 // Cache 全局缓存

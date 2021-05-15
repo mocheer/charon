@@ -17,8 +17,8 @@ import (
 	"github.com/gofiber/helmet/v2"
 	jwtware "github.com/gofiber/jwt/v2"
 	"github.com/mocheer/charon/global"
-	"github.com/mocheer/pluto/clock"
 	"github.com/mocheer/pluto/fn"
+	"github.com/mocheer/pluto/ts/clock"
 )
 
 // Use 使用所有中间件

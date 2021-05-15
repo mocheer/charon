@@ -1,4 +1,4 @@
-package tabletypes
+package model
 
 import (
 	"database/sql/driver"
@@ -11,6 +11,7 @@ import (
 	"gorm.io/gorm/schema"
 )
 
+// 用于支持 geojson的查询，ST_ASGeojson
 type Geometry json.RawMessage
 
 // Value return json value, implement driver.Valuer interface

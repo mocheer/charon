@@ -6,7 +6,6 @@ import (
 
 	"github.com/mocheer/charon/global"
 	"github.com/mocheer/pluto/fn"
-	"github.com/mocheer/pluto/ref"
 	"github.com/tidwall/gjson"
 	"gorm.io/gorm"
 )
@@ -23,12 +22,12 @@ func (o *Wrapper) Model(name string) *Wrapper {
 
 // NewModel 实例化数据模型
 func (o *Wrapper) NewModel() interface{} {
-	return ref.New(o.Ctx.Statement.Model)
+	return fn.New(o.Ctx.Statement.Model)
 }
 
 // NewModelSlice 实例化数据模型集合
 func (o *Wrapper) NewModelSlice() interface{} {
-	return ref.NewSlice(o.Ctx.Statement.Model)
+	return fn.NewSlice(o.Ctx.Statement.Model)
 }
 
 // NewEntity 实例化数据模型并赋值

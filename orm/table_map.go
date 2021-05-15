@@ -2,10 +2,11 @@ package orm
 
 import (
 	"github.com/mocheer/charon/orm/tables"
+	"github.com/mocheer/pluto/ts"
 )
 
 // tableMap 映射
-var TableMap = map[string]interface{}{
+var TableMap = ts.Map{
 	"app":     &tables.AppConfig{},
 	"page":    &tables.PageConfig{},
 	"view":    &tables.ViewConfig{},
