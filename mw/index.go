@@ -34,7 +34,7 @@ func Use(app *fiber.App) {
 	// 		return c.Path() == `/api/v1/auth/login`
 	// 	},
 	// }))
-	// 安全中间件，包含xss、xframe、contenttype等方面的漏洞防御
+	// 安全中间件，包含`xss、xframe、contenttype`等方面的漏洞防御
 	app.Use(helmet.New())
 
 	// 插件有使用顺序，且顺序非常重要，比如说cache需要放到compress后面(这个在2.2.4之后版本已支持)，compresss需要放到业务路由前面等

@@ -6,6 +6,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cache"
+	"github.com/mocheer/charon/global"
 	"github.com/mocheer/pluto/ts/clock"
 )
 
@@ -17,6 +18,11 @@ var CacheControl = NewCacheControl(clock.Month)
 
 // NewCache 创建缓存
 func NewCache(exp time.Duration) func(*fiber.Ctx) error {
+	if global.IS_DEV {
+		return func(c *fiber.Ctx) error {
+			return c.Next()
+		}
+	}
 	return cache.New(cache.Config{
 		Next: func(c *fiber.Ctx) bool {
 			return c.Query("refresh") == "true"

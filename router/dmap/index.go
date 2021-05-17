@@ -138,12 +138,11 @@ func imageTileHandle(c *fiber.Ctx) error {
 // layerHandle
 func layerHandle(c *fiber.Ctx) error {
 	idParam := c.Params("id")
-	args := &orm.SelectArgs{}
-	args.Name = "layer"
-	args.Mode = "first"
-	args.Where = fmt.Sprintf("id=%s", idParam)
-	args.Select = fmt.Sprintf("crs,extent,id,name,options,type,properties,array_to_json(array(select row_to_json(e) from (select * from pipal.dmap_layer where parent_id = %s)e)) as items", idParam)
-	result := req.Engine().Query(args)
+	result := req.Engine().
+		Model("layer").
+		Where(fmt.Sprintf("id=%s", idParam)).
+		SelectTableAsJSON(ts.Map{"id": idParam}).
+		First()
 	//
 	return res.JSON(c, result)
 }
@@ -151,11 +150,11 @@ func layerHandle(c *fiber.Ctx) error {
 // featureHandle 要素服务
 func featureHandle(c *fiber.Ctx) error {
 	idParam := c.Params("id")
-
+	//
 	result := &[]model.GeoFeature{}
 	global.DB.Raw(`select row.geojson->>'type' as type , row.geojson->'coordinates' as coordinates , row.properties from (select st_asgeojson(geometry,4)::jsonb as geojson,properties from pipal.dmap_feature where layer_id = ?)row `, idParam).Scan(result)
 	//
-	return res.JSON(c, &map[string]interface{}{
+	return res.JSON(c, map[string]interface{}{
 		"type":       "GeometryCollection",
 		"geometries": result,
 		"properties": struct{}{},

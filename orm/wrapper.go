@@ -2,10 +2,11 @@ package orm
 
 import (
 	"encoding/json"
-	"strings"
+	"fmt"
 
 	"github.com/mocheer/charon/global"
 	"github.com/mocheer/pluto/fn"
+	"github.com/mocheer/pluto/ts"
 	"github.com/tidwall/gjson"
 	"gorm.io/gorm"
 )
@@ -14,20 +15,69 @@ type Wrapper struct {
 	Ctx *gorm.DB
 }
 
+// Query 查询
+func (o *Wrapper) Query(args *SelectArgs) interface{} {
+	var SelectTableAsJSON ts.Map
+	if args.SelectTableAsJSON != "" {
+		SelectTableAsJSON = ts.Map{
+			"id": gjson.Get(args.SelectTableAsJSON, "id"),
+		}
+	}
+	return o.Model(args.Name).
+		Select(args.Select).
+		SelectTableAsJSON(SelectTableAsJSON).
+		Joins(args.Joins).
+		Where(args.Where).
+		Not(args.Not).
+		Order(args.Order).
+		Limit(args.Limit).
+		Offset(args.Offset).
+		GetData(args.Mode)
+}
+
+// Create 创建
+func (o *Wrapper) Create(data []byte) *Wrapper {
+	o.Ctx = o.Ctx.Create(o.NewEntity(data)) //RowsAffected 才能生效
+	return o
+}
+
+// Update 修改，默认情况下智慧更新非零值
+// 没有通过Model指定主键的时候会批量更新
+func (o *Wrapper) Updates(data []byte) *Wrapper {
+	o.Ctx = o.Ctx.Updates(o.NewEntity(data)) //RowsAffected 才能生效
+	return o
+}
+
+// Update 修改
+func (o *Wrapper) Delete(data []byte) *Wrapper {
+	o.Ctx = o.Ctx.Delete(o.NewEntity(data)) //RowsAffected 才能生效
+	return o
+}
+
 // Model 设置数据模型
 func (o *Wrapper) Model(name string) *Wrapper {
 	o.Ctx = o.Ctx.Model(TableMap[name])
 	return o
 }
 
+// Model 设置数据模型
+func (o *Wrapper) GetModel() interface{} {
+	return o.Ctx.Statement.Model
+}
+
+// Model 设置数据模型
+func (o *Wrapper) GetTableName() string {
+	return fn.CallMethod(o.GetModel(), "TableName")[0].String()
+}
+
 // NewModel 实例化数据模型
 func (o *Wrapper) NewModel() interface{} {
-	return fn.New(o.Ctx.Statement.Model)
+	return fn.New(o.GetModel())
 }
 
 // NewModelSlice 实例化数据模型集合
 func (o *Wrapper) NewModelSlice() interface{} {
-	return fn.NewSlice(o.Ctx.Statement.Model)
+	return fn.NewSlice(o.GetModel())
 }
 
 // NewEntity 实例化数据模型并赋值
@@ -41,15 +91,35 @@ func (o *Wrapper) NewEntity(data []byte) interface{} {
 }
 
 // Select 字段选择
-func (o *Wrapper) Select(data string) *Wrapper {
+// @param data string | []string
+func (o *Wrapper) Select(data interface{}) *Wrapper {
 	if data != "" {
+		// Ctx.Select 支持 []string 和 string
 		// 不止是字段选择，还是字段重命名，且支持函数调用
-		o.Ctx.Select(strings.Split(data, ","))
+		o.Ctx.Select(data)
 	}
 	return o
 }
 
-// Joins
+// Select 字段选择
+func (o *Wrapper) SelectTableAsJSON(args ts.Map) *Wrapper {
+	if args == nil {
+		return o
+	}
+	selects := o.Ctx.Statement.Selects
+	if len(selects) == 0 {
+		selects = append(selects, "*")
+	}
+	args = fn.AssignMap(ts.Map{"parentId": "parent_id", "tableName": o.GetTableName(), "name": "items"}, args)
+	str := fmt.Sprintf(`array_to_json(array(select row_to_json(e) from (select * from %s where %s = %s)e)) as %s`,
+		args["tableName"],
+		args["parentId"],
+		args["id"],
+		args["name"])
+	return o.Select(append(selects, str))
+}
+
+// Joins 链式方法
 func (o *Wrapper) Joins(data []string) *Wrapper {
 	for _, joinStr := range data {
 		o.Ctx.Joins(joinStr)
@@ -57,7 +127,7 @@ func (o *Wrapper) Joins(data []string) *Wrapper {
 	return o
 }
 
-// Where
+// Where 链式方法
 func (o *Wrapper) Where(data string) *Wrapper {
 	r := gjson.Parse(data)
 	switch r.Type {
@@ -69,7 +139,7 @@ func (o *Wrapper) Where(data string) *Wrapper {
 	return o
 }
 
-//
+// Not 链式方法
 func (o *Wrapper) Not(data string) *Wrapper {
 	r := gjson.Parse(data)
 	switch r.Type {
@@ -106,46 +176,38 @@ func (o *Wrapper) Offset(data int) *Wrapper {
 	return o
 }
 
-// Query 查询
-func (o *Wrapper) Query(args *SelectArgs) interface{} {
-	return o.Model(args.Name).Select(args.Select).Joins(args.Joins).Where(args.Where).Not(args.Not).Order(args.Order).Limit(args.Limit).Offset(args.Offset).GetData(args.Mode)
+// First 执行方法
+func (o *Wrapper) First() (data interface{}) {
+	data = o.NewModel()
+	o.Ctx.First(data)
+	return
+}
+
+// Last 执行方法
+func (o *Wrapper) Last() (data interface{}) {
+	data = o.NewModel()
+	o.Ctx.Last(data)
+	return
+}
+
+// Find 执行方法
+func (o *Wrapper) Find() (data interface{}) {
+	data = o.NewModelSlice()
+	o.Ctx.Find(data)
+	return
 }
 
 // GetData 查询
 func (o *Wrapper) GetData(mode string) (data interface{}) {
 	switch mode {
 	case "first":
-		data = o.NewModel()
-		o.Ctx.First(data)
+		data = o.First()
 	case "last":
-		data := o.NewModel()
-		o.Ctx.Last(data)
-	case "take":
-		data := o.NewModel()
-		o.Ctx.Take(data)
+		data = o.Last()
 	default: //"find"
-		data = o.NewModelSlice()
-		o.Ctx.Find(data)
+		data = o.Find()
 	}
 	return
-}
-
-// Create 创建
-func (o *Wrapper) Create(data []byte) *Wrapper {
-	o.Ctx = o.Ctx.Create(o.NewEntity(data)) //RowsAffected 才能生效
-	return o
-}
-
-// Update 修改
-func (o *Wrapper) Updates(data []byte) *Wrapper {
-	o.Ctx = o.Ctx.Updates(o.NewEntity(data)) //RowsAffected 才能生效
-	return o
-}
-
-// Update 修改
-func (o *Wrapper) Delete(data []byte) *Wrapper {
-	o.Ctx = o.Ctx.Delete(o.NewEntity(data)) //RowsAffected 才能生效
-	return o
 }
 
 // Raw

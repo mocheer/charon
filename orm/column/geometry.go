@@ -1,4 +1,4 @@
-package model
+package column
 
 import (
 	"database/sql/driver"
@@ -11,8 +11,16 @@ import (
 	"gorm.io/gorm/schema"
 )
 
-// 用于支持 geojson的查询，ST_ASGeojson
+// 用于支持 geojson 的查询，ST_ASGeojson
 type Geometry json.RawMessage
+
+// func (g Geometry) GormValue(ctx context.Context, db *gorm.DB) clause.Expr {
+// 	val, _ := g.Value()
+// 	return clause.Expr{
+// 		SQL:  "ST_GeomFromGeoJSON(?)",
+// 		Vars: []interface{}{val},
+// 	}
+// }
 
 // Value return json value, implement driver.Valuer interface
 func (g Geometry) Value() (driver.Value, error) {
