@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/mocheer/charon/global"
+	"github.com/mocheer/charon/orm/inter"
 	"github.com/mocheer/pluto/fn"
 	"github.com/mocheer/pluto/ts"
 	"github.com/tidwall/gjson"
@@ -41,6 +42,12 @@ func (o *Wrapper) Create(data []byte) *Wrapper {
 	return o
 }
 
+// FirstOrCreate 创建
+func (o *Wrapper) FirstOrCreate(data []byte) *Wrapper {
+	o.Ctx = o.Ctx.FirstOrCreate(o.NewEntity(data)) //RowsAffected 才能生效
+	return o
+}
+
 // Update 修改，默认情况下智慧更新非零值
 // 没有通过Model指定主键的时候会批量更新
 func (o *Wrapper) Updates(data []byte) *Wrapper {
@@ -67,7 +74,13 @@ func (o *Wrapper) GetModel() interface{} {
 
 // Model 设置数据模型
 func (o *Wrapper) GetTableName() string {
-	return fn.CallMethod(o.GetModel(), "TableName")[0].String()
+	model := o.GetModel()
+	entity, ok := model.(inter.Entity)
+	if ok {
+		return entity.TableName()
+	}
+	return fn.GetStructTypeName(model)
+	// return fn.CallMethod(o.GetModel(), "TableName")[0].String()
 }
 
 // NewModel 实例化数据模型

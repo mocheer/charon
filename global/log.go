@@ -16,13 +16,16 @@ import (
 
 type Logger struct {
 	*logrus.Logger
+	// 日志文件保存时长，超过时长后自动清除
+	KeepDay float64
 }
 
 // Log 日志操作对象
-var Log = &Logger{logrus.New()}
+var Log = &Logger{Logger: logrus.New(), KeepDay: 10}
 
 // Init 初始化日志
 func (log *Logger) Init() {
+	log.ClearOld()
 	logFileName := path.Join(cts.LogDir, fmt.Sprintf("/logrus.%s.log", clock.Now().Fmt(clock.FmtCompactDate)))
 	file, err := fs.OpenOrCreate(logFileName, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err == nil {
@@ -34,13 +37,13 @@ func (log *Logger) Init() {
 	window.SetTimeout(log.Init, time.Duration(clock.GetDayLastMillisecond()))
 }
 
-// CheckClear 历史的日志文件需要删除
-func (log *Logger) CheckClear(num float64) {
-	fs.EachDirToRemove(cts.LogDir, func(filename string) bool {
+// ClearOld 历史的日志文件需要删除
+func (log *Logger) ClearOld() {
+	fs.EachFilesRemove(cts.LogDir, func(filename string, fi os.FileInfo) bool {
 		timeStrArray := regexp.MustCompile(`logrus\.(.+)\.log`).FindStringSubmatch(filename)
 		if len(timeStrArray) == 0 {
 			return true
 		}
-		return clock.MustParse(timeStrArray[1], clock.FmtCompactDate).SinceDays() > num
+		return clock.MustParse(timeStrArray[1], clock.FmtCompactDate).SinceDays() > log.KeepDay
 	})
 }

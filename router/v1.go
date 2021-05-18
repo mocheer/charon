@@ -11,6 +11,7 @@ import (
 	"github.com/mocheer/charon/router/query"
 	"github.com/mocheer/charon/router/structure"
 	"github.com/mocheer/charon/router/upload"
+	"github.com/mocheer/charon/router/ws"
 )
 
 // v1_init /api/v1/xxx/xx
@@ -28,4 +29,5 @@ func v1_init(api fiber.Router) {
 	proxies.Use(v1)
 	arcgis.Use(v1)
 	dmap.Use(v1)
+	ws.Use(v1)
 }
