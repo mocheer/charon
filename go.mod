@@ -10,7 +10,7 @@ require (
 	github.com/gofiber/fiber/v2 v2.9.0
 	github.com/gofiber/helmet/v2 v2.1.2
 	github.com/gofiber/jwt/v2 v2.2.1
-	github.com/gofiber/websocket/v2 v2.0.3 // indirect
+	github.com/gofiber/websocket/v2 v2.0.3
 	github.com/gofrs/uuid v4.0.0+incompatible // indirect
 	github.com/jackc/pgmock v0.0.0-20201204152224-4fe30f7445fd // indirect
 	github.com/jackc/pgproto3/v2 v2.0.7 // indirect
@@ -23,7 +23,7 @@ require (
 	github.com/sirupsen/logrus v1.4.2
 	github.com/stretchr/testify v1.7.0 // indirect
 	github.com/tdewolff/canvas v0.0.0-20210507174957-44ce152a5327 // direct
-	github.com/tidwall/gjson v1.7.5
+	github.com/tidwall/gjson v1.8.0
 	github.com/twpayne/go-geom v1.4.0
 	github.com/valyala/fasthttp v1.24.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect

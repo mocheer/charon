@@ -52,12 +52,13 @@ func getTile(c *fiber.Ctx) error {
 		data, err := server.ReadTile(ts.Tile{
 			Z: z, Y: y, X: x,
 		})
-
 		if err == nil {
-			c.Type(server.TileFormat)
 			return c.Send(data)
+		} else {
+			return res.Error(c, "读取瓦片错误", err)
 		}
 	}
 	//
-	return res.Error(c, "读取瓦片错误", err)
+	return res.JSON(c, "没有该底图服务")
+
 }

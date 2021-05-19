@@ -1,7 +1,10 @@
 package res
 
 import (
+	"fmt"
+
 	"github.com/gofiber/fiber/v2"
+	"github.com/mocheer/charon/global"
 )
 
 // Response 返回的数据结构
@@ -27,6 +30,9 @@ func JSON(c *fiber.Ctx, data interface{}) error {
 
 // Error 返回错误信息
 func Error(c *fiber.Ctx, data string, err error) error {
+	if global.IS_DEV {
+		fmt.Println(err)
+	}
 	return Result(c, fiber.StatusInternalServerError, data, err.Error())
 }
 

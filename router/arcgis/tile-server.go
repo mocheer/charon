@@ -47,6 +47,7 @@ func (server *TileServer) ReadTile(tile ts.Tile) ([]byte, error) {
 	case EsriMapCacheStorageModeCompact:
 		return server.ReadCompactTile(tile)
 	default:
+		// esriMapCacheStorageModeExploded
 		return server.ReadExplodedTile(tile)
 	}
 }
@@ -135,7 +136,7 @@ func (server *TileServer) GetFilePath(tile ts.Tile) string {
 	level := fmt.Sprintf("L%02d", tile.Z)
 	row := fmt.Sprintf("R%08x", tile.Y)
 	column := fmt.Sprintf("C%08x", tile.X)
-	filePath := filepath.Join(server.BaseDirectory, level, row, column)
+	filePath := filepath.Join(server.BaseDirectory, "_alllayers", level, row, column)
 
 	if server.TileFormat == "JPEG" {
 		return filePath + ".jpg" //JPEG

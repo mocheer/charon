@@ -1,5 +1,6 @@
 {
   "name":"charon",
+  "version":"1.0.0",
   "scripts":{
     "dev":"air",
     "build-debug":"go build -o charon-debug.exe -ldflags \"-s -w\"",

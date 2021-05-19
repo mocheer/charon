@@ -64,13 +64,13 @@ func Use(app *fiber.App) {
 	}
 
 	for index, config := range global.Config.Static {
-
 		app.Static(config.Name, config.Dir, fiber.Static{
-			Compress:  true,       //
-			ByteRange: true,       //
-			Browse:    false,      // 是否访问目录时列出文件列表
-			MaxAge:    clock.Week, // 强缓存时间，单位秒
-			Index:     "index.html",
+			Compress:      true,             //
+			ByteRange:     true,             //
+			Browse:        false,            // 是否访问目录时列出文件列表
+			CacheDuration: 10 * time.Second, //缓存时间
+			MaxAge:        clock.Week,       // 前端强缓存时间，单位秒
+			Index:         "index.html",
 		})
 		//
 		indexHTML := filepath.Join(config.Dir, "index.html")
