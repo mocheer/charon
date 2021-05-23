@@ -123,7 +123,8 @@ func (o *Wrapper) SelectTableAsJSON(args ts.Map) *Wrapper {
 	if len(selects) == 0 {
 		selects = append(selects, "*")
 	}
-	args = fn.AssignMap(ts.Map{"parentId": "parent_id", "tableName": o.GetTableName(), "name": "items"}, args)
+
+	args = ts.Map{"parentId": "parent_id", "tableName": o.GetTableName(), "name": "items"}.Assign(args)
 	str := fmt.Sprintf(`array_to_json(array(select row_to_json(e) from (select * from %s where %s = %s)e)) as %s`,
 		args["tableName"],
 		args["parentId"],

@@ -36,6 +36,11 @@ func Error(c *fiber.Ctx, data string, err error) error {
 	return Result(c, fiber.StatusInternalServerError, data, err.Error())
 }
 
+// Warn 警告
+func Warn(c *fiber.Ctx, data string) error {
+	return Result(c, fiber.StatusInternalServerError, data, "")
+}
+
 // PNG 返回图片信息
 func PNG(c *fiber.Ctx, data []byte) error {
 	return c.Type("png").Send(data)

@@ -1,6 +1,7 @@
 package ws
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/gofiber/fiber/v2"
@@ -10,42 +11,38 @@ import (
 // Use 初始化 uploadFile 路由
 func Use(api fiber.Router) {
 	router := api.Group("/ws")
+	// websocket.Conn bindings https://pkg.go.dev/github.com/fasthttp/websocket?tab=doc#pkg-index
+	router.Get("/", websocket.New(handle))
+	//
+	pull()
+	push()
+}
 
-	router.Use("/ws", func(c *fiber.Ctx) error {
-		// IsWebSocketUpgrade returns true if the client
-		// requested upgrade to the WebSocket protocol.
-		if websocket.IsWebSocketUpgrade(c) {
-			c.Locals("allowed", true)
-			return c.Next()
-		}
-		return fiber.ErrUpgradeRequired
-	})
+func handle(c *websocket.Conn) {
+	// 注销
+	defer func() {
+		unregister <- c
+		c.Close()
+	}()
 
-	router.Get("/ws/:id", websocket.New(func(c *websocket.Conn) {
-		// c.Locals is added to the *websocket.Conn
-		log.Println(c.Locals("allowed"))  // true
-		log.Println(c.Params("id"))       // 123
-		log.Println(c.Query("v"))         // 1.0
-		log.Println(c.Cookies("session")) // ""
-
-		// websocket.Conn bindings https://pkg.go.dev/github.com/fasthttp/websocket?tab=doc#pkg-index
-		var (
-			mt  int
-			msg []byte
-			err error
-		)
-		for {
-			if mt, msg, err = c.ReadMessage(); err != nil {
-				log.Println("read:", err)
-				break
+	// 注册
+	register <- c
+	//
+	for {
+		messageType, message, err := c.ReadMessage()
+		if err != nil {
+			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+				log.Println("read error:", err)
 			}
-			log.Printf("recv: %s", msg)
-
-			if err = c.WriteMessage(mt, msg); err != nil {
-				log.Println("write:", err)
-				break
-			}
+			return // Calls the deferred function, i.e. closes the connection on error
 		}
 
-	}))
+		if messageType == websocket.TextMessage {
+			// Broadcast the received message
+			fmt.Println(string(message))
+		} else {
+			log.Println("websocket message received of type", messageType)
+		}
+	}
+
 }
