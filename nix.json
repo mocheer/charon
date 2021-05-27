@@ -12,6 +12,7 @@
     "setup":"nix run install && nix run start",
     "unsetup":"nix run stop && nix run remove",
     "rsa":"nix rsa assets/rsa",
-    "pprof":"go tool pprof -inuse_space http://127.0.0.1:9912/debug/pprof/heap"
+    "pprof":"go tool pprof -inuse_space http://127.0.0.1:9912/debug/pprof/heap",
+    "plugin":"go build -buildmode=plugin"
   }
 }

@@ -37,7 +37,7 @@ func PermissProtectd(c *fiber.Ctx) error {
 // jwtError jwt 认证失败
 func jwtError(c *fiber.Ctx, err error) error {
 	if err.Error() == "Missing or malformed JWT" {
-		return res.Result(c, fiber.StatusBadRequest, "Missing or malformed JWT", nil)
+		return res.Result(c, fiber.StatusBadRequest, err.Error(), nil)
 	}
 	return res.Result(c, fiber.StatusUnauthorized, "Invalid or expired JWT", nil)
 }

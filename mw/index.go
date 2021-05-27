@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -113,7 +112,7 @@ func UseProtected(r fiber.Router) {
 	// jwt token认证守卫
 	r.Use(jwtware.New(jwtware.Config{
 		Filter: func(c *fiber.Ctx) bool {
-			return c.Method() == "GET" || strings.HasPrefix(c.Path(), `/api/v1/query/raw`)
+			return c.Method() == "GET"
 		},
 		SigningKey:   SigningKey,
 		ErrorHandler: jwtError,

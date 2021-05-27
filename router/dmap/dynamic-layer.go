@@ -1,7 +1,6 @@
 package dmap
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"image"
@@ -229,34 +228,30 @@ func (layer *DynamicLayer) drawCircle(x float64, y float64, r float64) {
 
 // drawImage 绘制图片
 func (layer *DynamicLayer) drawImage(path string, x float64, y float64) {
-	image, err := img.FromFile(filepath.Join(global.Config.FirstStaticDir(), path))
+	im, err := img.FromFile(filepath.Join(global.Config.FirstStaticDir(), path))
 
 	if err != nil {
 		global.Log.Error(err)
 		return
 	}
-	layer.ctx.DrawImage(x-16, y-16, image, 1)
+	layer.ctx.DrawImage(x-16, y-16, im.Image, 1)
 }
 
 // GetData 获取画布数据
 func (layer *DynamicLayer) GetData() []byte {
-
 	image := rasterizer.Draw(layer.canvas, 1)
-	buf := new(bytes.Buffer)
-	// jpeg.Encode(buf, image, nil)
-	png.Encode(buf, image)
-
-	return buf.Bytes()
+	bs, _ := img.ToBytes(image, "png")
+	return bs
 }
 
 // savingTile 保存瓦片
-func (layer *DynamicLayer) savingTile(img *image.RGBA, i, j int) string {
+func (layer *DynamicLayer) savingTile(imgRGBA *image.RGBA, i, j int) string {
 	minTile := layer.minTile
 	imgTilePath := fmt.Sprintf(ImageTilePathFormat, layer.id, minTile.Z, j, i)
 	if !fs.IsExist(imgTilePath) {
 		x0 := (i - minTile.X) * 256
 		y0 := (j - minTile.Y) * 256
-		subImg := img.SubImage(image.Rect(x0, y0, x0+256, y0+256))
+		subImg := imgRGBA.SubImage(image.Rect(x0, y0, x0+256, y0+256))
 		f, _ := fs.OpenOrCreate(imgTilePath, os.O_CREATE|os.O_WRONLY, 0666)
 		png.Encode(f, subImg)
 		f.Close()
