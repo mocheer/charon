@@ -5,13 +5,13 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/proxy"
 )
 
-// Use
+// Use 77af3370f55d0399278ded758b023f59
 func Use(api fiber.Router) {
 	router := api.Group("proxy")
-	tdt := router.Group("tdt")
+	tdt := router.Group("amap")
 	tdt.Use(proxy.Balancer(proxy.Config{
 		Servers: []string{
-			"http://t0.tianditu.gov.cn/",
+			"",
 		},
 	}))
 }

@@ -54,9 +54,8 @@ func getTile(c *fiber.Ctx) error {
 		})
 		if err == nil {
 			return c.Send(data)
-		} else {
-			return res.Error(c, "读取瓦片错误", err)
 		}
+		return res.Error(c, "读取瓦片错误", err)
 	}
 	//
 	return res.JSON(c, "没有该底图服务")

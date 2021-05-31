@@ -35,7 +35,7 @@ func login(c *fiber.Ctx) error {
 		return res.Result(c, fiber.StatusBadRequest, "Error on login request", err)
 	}
 	//
-	plain := DecodeCliper(input.Cipher)
+	plain := DecodeCipher(input.Cipher)
 	username := plain.Get("username").String()
 	password := plain.Get("password").String()
 	//
@@ -79,7 +79,7 @@ func signup(c *fiber.Ctx) error {
 		return res.Result(c, fiber.StatusBadRequest, "参数有误", err)
 	}
 
-	plain := DecodeCliper(input.Cipher)
+	plain := DecodeCipher(input.Cipher)
 	username := plain.Get("username").String()
 	password := plain.Get("password").String()
 	//

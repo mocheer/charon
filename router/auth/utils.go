@@ -9,8 +9,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// DecodeCliper 解析前端密文
-func DecodeCliper(data string) gjson.Result {
+// DecodeCipher 解析密文
+func DecodeCipher(data string) gjson.Result {
 	plainText := ecc.RSA_DecodeJSEncrypt(data, cts.RSA_PrivatePemPath)
 	return gjson.Parse(plainText)
 }
