@@ -32,7 +32,7 @@ func login(c *fiber.Ctx) error {
 	var input LoginInput
 	//
 	if err := c.BodyParser(&input); err != nil {
-		return res.Result(c, fiber.StatusBadRequest, "Error on login request", err)
+		return res.Result(c, fiber.StatusBadRequest, "Error on login request", err.Error())
 	}
 	//
 	plain := DecodeCipher(input.Cipher)
@@ -41,12 +41,12 @@ func login(c *fiber.Ctx) error {
 	//
 	user, err := getUserByUsername(username)
 	if err != nil {
-		return res.Result(c, fiber.StatusUnauthorized, "Error on username", err)
+		return res.Result(c, fiber.StatusUnauthorized, "Error on username", err.Error())
 	}
 
 	// 这里直接判断原始密码有问题
 	if !CheckPasswordHash(password, user.Password) {
-		return res.Result(c, fiber.StatusUnauthorized, "Invalid password", nil)
+		return res.Result(c, fiber.StatusUnauthorized, "Invalid password", "")
 	}
 
 	token := jwt.New(jwt.SigningMethodHS256)
@@ -76,7 +76,7 @@ func signup(c *fiber.Ctx) error {
 	var input LoginInput
 	//
 	if err := c.BodyParser(&input); err != nil {
-		return res.Result(c, fiber.StatusBadRequest, "参数有误", err)
+		return res.Result(c, fiber.StatusBadRequest, "参数有误", err.Error())
 	}
 
 	plain := DecodeCipher(input.Cipher)
@@ -84,13 +84,13 @@ func signup(c *fiber.Ctx) error {
 	password := plain.Get("password").String()
 	//
 	if len(password) < 6 {
-		return res.Result(c, fiber.StatusBadRequest, "参数有误：密码不应小于6位", nil)
+		return res.Result(c, fiber.StatusBadRequest, "参数有误：密码不应小于6位", "")
 	}
 	//
 	query := global.DB.Create(tables.User{Name: username, Password: hashAndSalt(password)})
 	//
 	if query.Error != nil {
-		return res.Result(c, fiber.StatusInternalServerError, "注册失败", query.Error)
+		return res.Result(c, fiber.StatusInternalServerError, "注册失败", query.Error.Error())
 	}
 	//
 	return res.JSON(c, true)

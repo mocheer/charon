@@ -31,13 +31,13 @@ func PermissProtectd(c *fiber.Ctx) error {
 	if role == 1 {
 		return c.Next()
 	}
-	return res.Result(c, fiber.StatusBadRequest, "没有权限", nil)
+	return res.Result(c, fiber.StatusBadRequest, "没有权限", "")
 }
 
 // jwtError jwt 认证失败
 func jwtError(c *fiber.Ctx, err error) error {
 	if err.Error() == "Missing or malformed JWT" {
-		return res.Result(c, fiber.StatusBadRequest, err.Error(), nil)
+		return res.Result(c, fiber.StatusBadRequest, err.Error(), "")
 	}
-	return res.Result(c, fiber.StatusUnauthorized, "Invalid or expired JWT", nil)
+	return res.Result(c, fiber.StatusUnauthorized, "Invalid or expired JWT", "")
 }
