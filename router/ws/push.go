@@ -3,9 +3,9 @@ package ws
 import (
 	"time"
 
-	"github.com/mocheer/pluto/js/window"
+	"github.com/mocheer/pluto/js"
 )
 
 func push() {
-	window.SetInterval(getTyphoon, time.Minute)
+	js.SetInterval(getTyphoon, time.Minute)
 }

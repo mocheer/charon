@@ -19,7 +19,7 @@ import (
 	"github.com/mocheer/charon/req"
 	"github.com/mocheer/charon/res"
 	"github.com/mocheer/pluto/fs"
-	"github.com/mocheer/pluto/js/window"
+	"github.com/mocheer/pluto/js"
 	"github.com/mocheer/pluto/ts"
 )
 
@@ -69,7 +69,7 @@ func createImageHandle(c *fiber.Ctx) error {
 			dynamicLayer.Add(feature.Geometry)
 		}
 		dynamicLayer.Draw()
-		cancelInterval := window.SetInterval(debug.FreeOSMemory, 60)
+		cancelInterval := js.SetInterval(debug.FreeOSMemory, 60)
 		defer cancelInterval()
 		dynamicLayer.SaveTiles().Wait()
 		if dynamicLayer.NumTile < 32 {

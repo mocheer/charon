@@ -9,7 +9,7 @@ import (
 
 	"github.com/mocheer/charon/cts"
 	"github.com/mocheer/pluto/fs"
-	"github.com/mocheer/pluto/js/window"
+	"github.com/mocheer/pluto/js"
 	"github.com/mocheer/pluto/ts/clock"
 	"github.com/sirupsen/logrus"
 )
@@ -34,7 +34,7 @@ func (log *Logger) Init() {
 		Log.Error("打开日志文件失败", err)
 	}
 	// 每隔一天重新切换日志文件输出
-	window.SetTimeout(log.Init, time.Duration(clock.GetDayLastMillisecond()))
+	js.SetTimeout(log.Init, time.Duration(clock.GetDayLastMillisecond()))
 }
 
 // ClearOld 历史的日志文件需要删除
