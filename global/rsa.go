@@ -2,6 +2,7 @@ package global
 
 import (
 	"github.com/mocheer/charon/cts"
+	"github.com/mocheer/pluto/ec"
 	"github.com/mocheer/pluto/fs"
 )
 

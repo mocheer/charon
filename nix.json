@@ -2,7 +2,7 @@
   "name":"charon",
   "version":"1.0.0",
   "scripts":{
-    "dev":"air",
+    "dev":"fiber dev",
     "build-debug":"go build -o charon-debug.exe -ldflags \"-s -w\"",
     "build":"go build -ldflags \"-s -w -X main.mode=prod\"",
     "install":"nssm install {appName} {execPath}/charon.exe",

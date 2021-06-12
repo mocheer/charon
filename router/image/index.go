@@ -2,7 +2,7 @@ package image
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"github.com/mocheer/pluto/img"
+	"github.com/mocheer/pluto/ts/img"
 )
 
 // Use 重定向
