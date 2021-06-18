@@ -15,6 +15,7 @@ import (
 	"github.com/mocheer/pluto/fn"
 	"github.com/mocheer/pluto/fs"
 	"github.com/mocheer/pluto/ts"
+	"github.com/mocheer/pluto/ts/grap"
 	"github.com/mocheer/pluto/ts/img"
 	"github.com/tdewolff/canvas"
 	"github.com/tdewolff/canvas/renderers/rasterizer"
@@ -151,7 +152,7 @@ func (layer *DynamicLayer) Draw() (err error) {
 }
 
 // Coor2Pixel
-func (layer *DynamicLayer) Coor2Pixel(coor geom.Coord) *ts.Point {
+func (layer *DynamicLayer) Coor2Pixel(coor geom.Coord) *grap.Point {
 	tilePoint := calc.LonLat2TilePoint(coor.X(), coor.Y(), float64(layer.tile.Z))
 	offset := tilePoint.Offset
 	offset.X += float64(tilePoint.X-layer.minTile.X) * 256
