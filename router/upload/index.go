@@ -44,7 +44,7 @@ func uploadFiles(c *fiber.Ctx) error {
 	for _, file := range files {
 		dst := path.Join(baseDir, file.Filename)
 		dir := path.Dir(dst)
-		fs.MkdirNotExist(dir)
+		fs.CreateDir(dir)
 		err := c.SaveFile(file, dst)
 		if err != nil {
 			return err
@@ -67,7 +67,7 @@ func uploadFolder(c *fiber.Ctx) error {
 		if strings.HasPrefix(fileName, "dist") {
 			fileName = strings.Replace(fileName, "dist/", "", 1)
 			dst := path.Join(global.Config.FirstStaticDir(), fileName)
-			fs.MkdirNotExist(dst)
+			fs.CreateDir(dst)
 			err := c.SaveFile(file, dst)
 			if err != nil {
 				return res.Error(c, "上传失败", err)

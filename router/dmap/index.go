@@ -21,6 +21,7 @@ import (
 	"github.com/mocheer/pluto/fs"
 	"github.com/mocheer/pluto/js"
 	"github.com/mocheer/pluto/ts"
+	"github.com/mocheer/pluto/ts/geois"
 )
 
 // Use 初始化 dmap 路由
@@ -52,7 +53,7 @@ func createImageHandle(c *fiber.Ctx) error {
 	fmt.Println(layerInfo)
 	layer := layerInfo.(*tables.DmapLayer)
 	//
-	dynamicLayer := NewDynamicLayer(id, &ts.Tile{
+	dynamicLayer := NewDynamicLayer(id, &geois.Tile{
 		Z: z,
 	})
 	dynamicLayer.SetOptions(layer.Options)
@@ -108,7 +109,7 @@ func imageTileHandle(c *fiber.Ctx) error {
 	layerInfo := req.Engine().Query(args)
 	layer := layerInfo.(*tables.DmapLayer)
 	//
-	dynamicLayer := NewDynamicLayer(id, &ts.Tile{
+	dynamicLayer := NewDynamicLayer(id, &geois.Tile{
 		Z: z, Y: y, X: x,
 	})
 	dynamicLayer.SetOptions(layer.Options)

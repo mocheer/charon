@@ -14,7 +14,7 @@ import (
 	"github.com/mocheer/pluto/calc"
 	"github.com/mocheer/pluto/fn"
 	"github.com/mocheer/pluto/fs"
-	"github.com/mocheer/pluto/ts"
+	"github.com/mocheer/pluto/ts/geois"
 	"github.com/mocheer/pluto/ts/grap"
 	"github.com/mocheer/pluto/ts/img"
 	"github.com/tdewolff/canvas"
@@ -29,9 +29,9 @@ type DynamicLayer struct {
 	id       int
 	canvas   *canvas.Canvas
 	ctx      *canvas.Context
-	tile     *ts.Tile
-	minTile  *ts.Tile
-	maxTile  *ts.Tile
+	tile     *geois.Tile
+	minTile  *geois.Tile
+	maxTile  *geois.Tile
 	numTileX int
 	numTileY int
 	NumTile  int
@@ -48,7 +48,7 @@ type DynamicLayer struct {
 }
 
 // NewDynamicLayer 动态图层服务
-func NewDynamicLayer(id int, tile *ts.Tile) *DynamicLayer {
+func NewDynamicLayer(id int, tile *geois.Tile) *DynamicLayer {
 	data := geom.NewGeometryCollection()
 	return &DynamicLayer{
 		id:      id,
@@ -127,8 +127,8 @@ func (layer *DynamicLayer) Draw() (err error) {
 	layer.numTileY = numTileY
 	layer.NumTile = numTileX * numTileY
 	//
-	layer.minTile = &ts.Tile{X: minTilePoint.X, Y: minTilePoint.Y, Z: minTilePoint.Z}
-	layer.maxTile = &ts.Tile{X: maxTilePoint.X, Y: maxTilePoint.Y, Z: maxTilePoint.Z}
+	layer.minTile = &geois.Tile{X: minTilePoint.X, Y: minTilePoint.Y, Z: minTilePoint.Z}
+	layer.maxTile = &geois.Tile{X: maxTilePoint.X, Y: maxTilePoint.Y, Z: maxTilePoint.Z}
 	//
 	layer.canvas = canvas.New(float64(numTileX)*256, float64(numTileY)*256)
 	layer.ctx = canvas.NewContext(layer.canvas)
