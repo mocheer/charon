@@ -22,7 +22,7 @@ import (
 
 // Use 使用所有中间件
 func Use(app *fiber.App) {
-	SigningKey = fn.String2Bytes(global.Config.Name)
+	SigningKey = fn.S2B(global.Config.Name)
 	// 日志中间件
 	app.Use(logger.New(logger.Config{
 		Output: os.Stdout,
