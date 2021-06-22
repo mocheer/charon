@@ -6,6 +6,8 @@ type AppConfig struct {
 	Name string
 	// 应用服务信息
 	DisplayName string
+	// 是否启用https（前提条件：有申请对应的ssl证书）
+	IsHTTPS bool
 	// 监听端口
 	Port string
 	// 静态资源服务

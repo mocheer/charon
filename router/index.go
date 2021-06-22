@@ -5,6 +5,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 
+	"github.com/mocheer/charon/cts"
 	"github.com/mocheer/charon/global"
 	"github.com/mocheer/charon/mw"
 )
@@ -20,7 +21,12 @@ func Init() {
 	app.Use(func(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusNotFound).SendString("not found")
 	})
-	// listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
-	log.Fatal(app.Listen(global.Config.Port))
-	// app.ListenTLS(":443", "./cert.pem", "./cert.key");//2.3.0
+	// 监听
+	var err error
+	if global.Config.IsHTTPS {
+		err = app.ListenTLS(global.Config.Port, cts.Cert_PEM, cts.Cert_KEY)
+	} else {
+		err = app.Listen(global.Config.Port)
+	}
+	log.Fatal(err)
 }

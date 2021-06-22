@@ -6,6 +6,7 @@ import (
 	"github.com/mocheer/pluto/js"
 )
 
+//
 func push() {
 	js.SetInterval(getTyphoon, time.Minute)
 }
