@@ -1,7 +1,9 @@
 package image
 
-type GetImageArgs struct {
-	W uint   // width  宽度
-	H uint   // height 高度
-	F string // format 格式 img.PNG | img.JPEG | img.GIF
+// ImageArgs
+type ImageArgs struct {
+	W     int    // width  宽度
+	H     int    // height 高度
+	F     string // format 格式 img.PNG | img.JPEG | img.GIF
+	Cache bool   // cache 是否缓存
 }

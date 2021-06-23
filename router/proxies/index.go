@@ -10,6 +10,7 @@ func Use(api fiber.Router) {
 	router := api.Group("proxy")
 	router.Get("/", ProxyHandle)
 	router.Post("/", ProxyHandle)
+	// 高德地图
 	router.Get("/amap/*", ProxyAMap)
 }
 

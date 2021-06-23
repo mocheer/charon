@@ -13,4 +13,6 @@ var TableMap = ts.Map{
 	"dmap":    &tables.Dmap{},
 	"layer":   &tables.DmapLayer{},
 	"feature": &tables.DmapFeature{},
+	"dir":     &tables.FsDir{},
+	"file":    &tables.FsFile{},
 }

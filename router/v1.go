@@ -10,7 +10,6 @@ import (
 	"github.com/mocheer/charon/router/proxies"
 	"github.com/mocheer/charon/router/query"
 	"github.com/mocheer/charon/router/reptile"
-	"github.com/mocheer/charon/router/structure"
 	"github.com/mocheer/charon/router/upload"
 	"github.com/mocheer/charon/router/ws"
 )
@@ -26,7 +25,6 @@ func v1_init(api fiber.Router) {
 	pipal.Use(v1)
 	query.Use(v1)
 	upload.Use(v1)
-	structure.Use(v1)
 	proxies.Use(v1)
 	arcgis.Use(v1)
 	dmap.Use(v1)

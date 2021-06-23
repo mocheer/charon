@@ -3,9 +3,9 @@
   "version":"1.0.0",
   "scripts":{
     "dev":"fiber dev",
-    "build-debug":"go build -o charon-debug.exe -ldflags \"-s -w\"",
+    "build-debug":"go build -o {appName}-debug.exe -ldflags \"-s -w\"",
     "build":"go build -ldflags \"-s -w -X main.mode=prod\"",
-    "install":"nssm install {appName} {execPath}/charon.exe",
+    "install":"nssm install {appName} {execPath}/{appName}.exe",
     "start":"nssm start {appName}",
     "stop":"nssm stop {appName}",
     "remove":"nssm remove {appName} confirm",

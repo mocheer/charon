@@ -5,6 +5,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/mocheer/charon/global"
+	"github.com/mocheer/pluto/ts/img"
 )
 
 // Response 返回的数据结构
@@ -39,6 +40,15 @@ func Error(c *fiber.Ctx, data string, err error) error {
 // Warn 警告
 func Warn(c *fiber.Ctx, data string) error {
 	return Result(c, fiber.StatusInternalServerError, data, "")
+}
+
+// Picture 返回图片
+func Picture(c *fiber.Ctx, p *img.Picture) error {
+	bs, err := p.ToBytes()
+	if err != nil {
+		return err
+	}
+	return c.Type(p.Type).Send(bs)
 }
 
 // PNG 返回图片信息
