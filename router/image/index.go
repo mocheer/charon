@@ -32,5 +32,5 @@ func imageHandle(c *fiber.Ctx) error {
 		p = p.Resize(args.W, args.H)
 	}
 
-	return res.Picture(c, p)
+	return res.Image(c, p)
 }

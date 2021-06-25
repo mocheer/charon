@@ -35,3 +35,8 @@ func krigingGridHandle(c *fiber.Ctx) error {
 	data := k.Grid(args.Bbox, args.CellSize)
 	return res.JSON(c, data)
 }
+
+// krigingImageHandle
+func krigingImageHandle(c *fiber.Ctx) error {
+	return nil
+}

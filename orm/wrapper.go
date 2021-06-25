@@ -114,7 +114,7 @@ func (o *Wrapper) Select(data interface{}) *Wrapper {
 	return o
 }
 
-// Select 字段选择
+// Select 字段选择，查询一张表的数据并转成数据集转成一个json字段
 func (o *Wrapper) SelectTableAsJSON(args ts.Map) *Wrapper {
 	if args == nil {
 		return o

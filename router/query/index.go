@@ -26,12 +26,19 @@ func Use(api fiber.Router) {
 	router.Post("/:name", mw.PermissProtectd, Update)
 	// delete 需要添加认证
 	router.Delete("/:name", mw.PermissProtectd, Delete)
+	// new
+	router.Get("/", mw.Cache, Select)
+	// insert 需要添加认证
+	router.Put("/", mw.PermissProtectd, Insert)
+	// update 需要添加认证
+	router.Post("/", mw.PermissProtectd, Update)
+	// delete 需要添加认证
+	router.Delete("/", mw.PermissProtectd, Delete)
 	// raw
 	router.Get("/raw/:name", Raw)
 	router.Post("/raw/:name", Raw)
 }
 
-// matched, _ := regexp.MatchString(`pg_*`, nameParam)
 // Select
 func Select(c *fiber.Ctx) error {
 	args := req.MustParseSelectArgs(c)

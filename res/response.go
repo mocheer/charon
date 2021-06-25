@@ -42,8 +42,8 @@ func Warn(c *fiber.Ctx, data string) error {
 	return Result(c, fiber.StatusInternalServerError, data, "")
 }
 
-// Picture 返回图片
-func Picture(c *fiber.Ctx, p *img.Picture) error {
+// Image 返回图片
+func Image(c *fiber.Ctx, p *img.Img) error {
 	bs, err := p.ToBytes()
 	if err != nil {
 		return err
@@ -53,5 +53,5 @@ func Picture(c *fiber.Ctx, p *img.Picture) error {
 
 // PNG 返回图片信息
 func PNG(c *fiber.Ctx, data []byte) error {
-	return c.Type("png").Send(data)
+	return c.Type(img.PNG).Send(data)
 }

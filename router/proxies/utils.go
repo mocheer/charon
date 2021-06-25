@@ -13,8 +13,9 @@ func proxyURL(c *fiber.Ctx, urlstr string) error {
 	if err != nil {
 		return err
 	}
-	// 这里重置请求头，防止被检测拦截
-	c.Request().Header.Reset()
+	// c.Request().Header.Reset();
+	// 重置host，改变源
+	// @see http-proxy(nodejs) changeOrigin
 	c.Request().Header.SetHost(u.Host)
 	//
 	if err := proxy.Do(c, urlstr); err != nil {

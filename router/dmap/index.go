@@ -24,4 +24,7 @@ func Use(api fiber.Router) {
 	//
 	router.Get("/kriging/grid", krigingGridHandle)
 	router.Post("/kriging/grid", krigingGridHandle)
+	//
+	router.Get("/kriging/image", krigingImageHandle)
+	router.Post("/kriging/image", krigingImageHandle)
 }

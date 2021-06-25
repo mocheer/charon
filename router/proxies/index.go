@@ -12,8 +12,11 @@ func Use(api fiber.Router) {
 	router.Post("/", ProxyHandle)
 	// 高德地图
 	router.Get("/amap/*", ProxyAMap)
+	// 综合气象数据
+	router.Get("/image.cma/*", ProxyImageCma)
 }
 
+// ProxyHandle
 func ProxyHandle(c *fiber.Ctx) error {
 	args := &ProxyArgs{}
 	req.MustParseArgs(c, args)
