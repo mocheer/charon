@@ -1,5 +1,7 @@
 package orm
 
+import "github.com/mocheer/pluto/ts"
+
 // SelectArgs 构建查询语句的参数
 type SelectArgs struct {
 	Name              string   `query:"name"`              // 表名
@@ -12,4 +14,23 @@ type SelectArgs struct {
 	Offset            int      `query:"offset"`            // 偏移位置
 	Order             string   `query:"order"`             // 排序
 	Joins             []string `query:"joins"`             // 多表关联查询
+}
+
+// InsertArgs 构建插入语句的参数
+type InsertArgs struct {
+	Name string `query:"name"` // 表名
+	Data ts.Map `query:"data"`
+}
+
+// UpdateArgs 构建查询语句的参数
+type UpdateArgs struct {
+	Name  string `query:"name"`  // 表名
+	Where string `query:"where"` // 查询 a=1 || {a:1}  => where a=1
+	Data  ts.Map `query:"data"`
+}
+
+// DeleteArgs 构建查询语句的参数
+type DeleteArgs struct {
+	Name  string `query:"name"`  // 表名
+	Where string `query:"where"` // 查询 a=1 || {a:1}  => where a=1
 }

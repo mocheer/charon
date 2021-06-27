@@ -9,7 +9,7 @@ import (
 
 	"github.com/mocheer/charon/cts"
 	"github.com/mocheer/pluto/fs"
-	"github.com/mocheer/pluto/js"
+	js "github.com/mocheer/pluto/jsg"
 	"github.com/mocheer/pluto/ts/clock"
 	"github.com/sirupsen/logrus"
 )

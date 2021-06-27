@@ -30,12 +30,3 @@ func MustParseArgs(c *fiber.Ctx, args interface{}) interface{} {
 	}
 	return args
 }
-
-//
-func MustParseSelectArgs(c *fiber.Ctx) *orm.SelectArgs {
-	var args = &orm.SelectArgs{}
-	if err := c.QueryParser(args); err != nil {
-		panic(fmt.Sprintf("参数有误：%s", err.Error()))
-	}
-	return args
-}

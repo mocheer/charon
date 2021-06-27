@@ -3,10 +3,10 @@ package ws
 import (
 	"time"
 
-	"github.com/mocheer/pluto/js"
+	"github.com/mocheer/pluto/jsg"
 )
 
 //
 func push() {
-	js.SetInterval(getTyphoon, time.Minute)
+	jsg.SetInterval(getTyphoon, time.Minute)
 }

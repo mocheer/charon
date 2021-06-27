@@ -5,6 +5,7 @@
     "dev":"fiber dev",
     "build-debug":"go build -o {appName}-debug.exe -ldflags \"-s -w\"",
     "build":"go build -ldflags \"-s -w -X main.mode=prod\"",
+    "build-wasm":"SET GOOS=js SET GOARCH=wasm go build {execPath}/wasm/main.go -o kriging.wasm",
     "install":"nssm install {appName} {execPath}/{appName}.exe",
     "start":"nssm start {appName}",
     "stop":"nssm stop {appName}",
