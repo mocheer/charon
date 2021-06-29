@@ -11,7 +11,7 @@ import (
 
 // DecodeCipher 解析密文
 func DecodeCipher(data string) gjson.Result {
-	plainText := ec.RSA_DecodeJSEncrypt(data, cts.RSA_PrivatePemPath)
+	plainText := ec.RSA_JSEncrypt(data, cts.RSA_PrivatePemPath)
 	return gjson.Parse(plainText)
 }
 
