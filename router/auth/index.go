@@ -1,11 +1,11 @@
 package auth
 
 import (
+	"fmt"
 	"time"
 
 	jwt "github.com/form3tech-oss/jwt-go"
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/limiter"
 	"github.com/mocheer/charon/cts"
 	"github.com/mocheer/charon/global"
 	"github.com/mocheer/charon/mw"
@@ -17,8 +17,8 @@ import (
 // @see https://github.com/gofiber/recipes/tree/master/auth-jwt
 func Use(api fiber.Router) {
 	router := api.Group("/auth")
-	// 登录
-	router.Post("/login", mw.NewLimiter(limiter.Config{Max: 3, Expiration: 10 * time.Second}), login)
+	// 登录 mw.NewLimiter(limiter.Config{Max: 3, Expiration: 3 * time.Second})
+	router.Post("/login", login)
 	// 注册
 	router.Post("/signup", signup)
 	// 获取用户信息
@@ -32,6 +32,7 @@ func login(c *fiber.Ctx) error {
 	var input LoginInput
 	//
 	if err := c.BodyParser(&input); err != nil {
+		fmt.Println(err)
 		return res.Result(c, fiber.StatusBadRequest, "Error on login request", err.Error())
 	}
 	//
@@ -67,7 +68,6 @@ func login(c *fiber.Ctx) error {
 	cookie.Expires = time.Now().Add(72 * time.Hour)
 	// Set cookie
 	c.Cookie(cookie)
-
 	return res.JSON(c, t)
 }
 

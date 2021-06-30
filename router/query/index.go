@@ -20,6 +20,8 @@ import (
 func Use(api fiber.Router) {
 	//
 	router := api.Group("/query")
+	// new
+	router.Get("/:name", mw.Cache, Select)
 	// insert 需要添加认证
 	router.Put("/:name", mw.PermissProtectd, Insert)
 	// update 需要添加认证
@@ -45,6 +47,7 @@ func Select(c *fiber.Ctx) error {
 	if err := c.QueryParser(args); err != nil {
 		panic(fmt.Sprintf("参数有误：%s", err.Error()))
 	}
+	args.Name = c.Params("name")
 	result := req.Engine().Query(args)
 	return res.JSON(c, result)
 }

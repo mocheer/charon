@@ -11,12 +11,11 @@ import (
 	"sync"
 
 	"github.com/mocheer/charon/global"
-	"github.com/mocheer/pluto/calc"
 	"github.com/mocheer/pluto/fn"
 	"github.com/mocheer/pluto/fs"
-	"github.com/mocheer/pluto/ts/geois"
-	"github.com/mocheer/pluto/ts/grap"
 	"github.com/mocheer/pluto/ts/img"
+	"github.com/mocheer/xena/gm"
+	"github.com/mocheer/xena/gs"
 	"github.com/tdewolff/canvas"
 	"github.com/tdewolff/canvas/renderers/rasterizer"
 	"github.com/twpayne/go-geom"
@@ -29,9 +28,9 @@ type DynamicLayer struct {
 	id       int
 	canvas   *canvas.Canvas
 	ctx      *canvas.Context
-	tile     *geois.Tile
-	minTile  *geois.Tile
-	maxTile  *geois.Tile
+	tile     *gs.Tile
+	minTile  *gs.Tile
+	maxTile  *gs.Tile
 	numTileX int
 	numTileY int
 	NumTile  int
@@ -48,7 +47,7 @@ type DynamicLayer struct {
 }
 
 // NewDynamicLayer 动态图层服务
-func NewDynamicLayer(id int, tile *geois.Tile) *DynamicLayer {
+func NewDynamicLayer(id int, tile *gs.Tile) *DynamicLayer {
 	data := geom.NewGeometryCollection()
 	return &DynamicLayer{
 		id:      id,
@@ -100,35 +99,37 @@ func (layer *DynamicLayer) Draw() (err error) {
 	minLat := bounds.Min(1)
 	maxLon := bounds.Max(0)
 	maxLat := bounds.Max(1)
+	//最左上的瓦片
+	topLeftLonLat := gs.LonLat{minLon, maxLat}
+	minTile, minTileOffset := topLeftLonLat.GetTileAndOffset(float64(layer.tile.Z))
+	// 最右下的瓦片
+	bottomRight := gs.LonLat{maxLon, minLat}
+	maxTile, maxTileOffset := bottomRight.GetTileAndOffset(float64(layer.tile.Z)) //
 	//
-	minTilePoint := calc.LonLat2TilePoint(minLon, maxLat, float64(layer.tile.Z)) //左上瓦片
-	maxTilePoint := calc.LonLat2TilePoint(maxLon, minLat, float64(layer.tile.Z)) //右下瓦片
+	if minTileOffset[0] < 16 {
+		minTile.X -= 1
+	}
+
+	if minTileOffset[1] < 16 {
+		minTile.Y -= 1
+	}
+
+	if maxTileOffset[0] > (256 - 16) {
+		maxTile.X += 1
+	}
+
+	if maxTileOffset[1] > (256 - 16) {
+		maxTile.Y += 1
+	}
 	//
-	if minTilePoint.Offset.X < 16 {
-		minTilePoint.X -= 1
-	}
-
-	if minTilePoint.Offset.Y < 16 {
-		minTilePoint.Y -= 1
-	}
-
-	if maxTilePoint.Offset.X > (256 - 16) {
-		maxTilePoint.X += 1
-	}
-
-	if maxTilePoint.Offset.Y > (256 - 16) {
-		maxTilePoint.Y += 1
-	}
-
-	//
-	numTileX := maxTilePoint.X - minTilePoint.X + 1
-	numTileY := maxTilePoint.Y - minTilePoint.Y + 1
+	numTileX := maxTile.X - minTile.X + 1
+	numTileY := maxTile.Y - minTile.Y + 1
 	layer.numTileX = numTileX
 	layer.numTileY = numTileY
 	layer.NumTile = numTileX * numTileY
 	//
-	layer.minTile = &geois.Tile{X: minTilePoint.X, Y: minTilePoint.Y, Z: minTilePoint.Z}
-	layer.maxTile = &geois.Tile{X: maxTilePoint.X, Y: maxTilePoint.Y, Z: maxTilePoint.Z}
+	layer.minTile = &gs.Tile{X: minTile.X, Y: minTile.Y, Z: minTile.Z}
+	layer.maxTile = &gs.Tile{X: maxTile.X, Y: maxTile.Y, Z: maxTile.Z}
 	//
 	layer.canvas = canvas.New(float64(numTileX)*256, float64(numTileY)*256)
 	layer.ctx = canvas.NewContext(layer.canvas)
@@ -152,13 +153,13 @@ func (layer *DynamicLayer) Draw() (err error) {
 }
 
 // Coor2Pixel
-func (layer *DynamicLayer) Coor2Pixel(coor geom.Coord) *grap.Point {
-	tilePoint := calc.LonLat2TilePoint(coor.X(), coor.Y(), float64(layer.tile.Z))
-	offset := tilePoint.Offset
-	offset.X += float64(tilePoint.X-layer.minTile.X) * 256
-	offset.Y += float64(tilePoint.Y-layer.minTile.Y) * 256
+func (layer *DynamicLayer) Coor2Pixel(coor geom.Coord) *gm.Point {
+	lonlat := gs.LonLat{coor.X(), coor.Y()}
+	tile, offset := lonlat.GetTileAndOffset(float64(layer.tile.Z))
+	offset[0] += float64(tile.X-layer.minTile.X) * 256
+	offset[1] += float64(tile.Y-layer.minTile.Y) * 256
 	// canvas的Y坐标轴方向跟浏览器是相反的
-	offset.Y = layer.canvas.H - offset.Y
+	offset[1] = layer.canvas.H - offset[1]
 	return offset
 }
 
@@ -169,11 +170,12 @@ func (layer *DynamicLayer) drawPoint(p *geom.Point) {
 	switch layer.Options.Feature.Src {
 	case "rect":
 	case "circle":
-		layer.drawCircle(offset.X, offset.Y, float64(layer.Options.Feature.Radius))
+		layer.drawCircle(offset[0], offset[1], float64(layer.Options.Feature.Radius))
 	default:
 		tolerance := 16.0 // 图片大小的一半
-		if offset.X >= -tolerance && offset.Y >= -tolerance && offset.X <= (layer.canvas.W+tolerance) && offset.Y <= (layer.canvas.H+tolerance) {
-			layer.drawImage(layer.Options.Feature.Src, offset.X, offset.Y)
+		if offset[0] >= -tolerance && offset[1] >= -tolerance && offset[0] <= (layer.canvas.W+tolerance) && offset[1] <= (layer.canvas.H+tolerance) {
+			fileName := filepath.Join(global.Config.FirstStaticDir(), layer.Options.Feature.Src)
+			layer.drawImage(fileName, offset[0], offset[1])
 		}
 	}
 }
@@ -189,9 +191,9 @@ func (layer *DynamicLayer) drawPolyline(line *geom.LineString) {
 	for i, coor := range coors {
 		offset := layer.Coor2Pixel(coor)
 		if i == 0 {
-			p.MoveTo(offset.X, offset.Y)
+			p.MoveTo(offset[0], offset[1])
 		}
-		p.LineTo(offset.X, offset.Y)
+		p.LineTo(offset[0], offset[1])
 	}
 	//
 	layer.ctx.DrawPath(0, 0, p)
@@ -212,9 +214,9 @@ func (layer *DynamicLayer) drawPolygon(polygon *geom.Polygon) {
 		for j, coor := range coors {
 			offset := layer.Coor2Pixel(coor)
 			if j == 0 {
-				p.MoveTo(offset.X, offset.Y)
+				p.MoveTo(offset[0], offset[1])
 			}
-			p.LineTo(offset.X, offset.Y)
+			p.LineTo(offset[0], offset[1])
 		}
 	}
 	p.Close()
@@ -228,8 +230,8 @@ func (layer *DynamicLayer) drawCircle(x float64, y float64, r float64) {
 }
 
 // drawImage 绘制图片
-func (layer *DynamicLayer) drawImage(path string, x float64, y float64) {
-	im, err := img.FromFile(filepath.Join(global.Config.FirstStaticDir(), path))
+func (layer *DynamicLayer) drawImage(fileName string, x float64, y float64) {
+	im, err := img.FromFile(fileName)
 
 	if err != nil {
 		global.Log.Error(err)

@@ -5,7 +5,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/mocheer/charon/res"
-	"github.com/mocheer/pluto/calc/kriging"
+	"github.com/mocheer/xena/alg/kriging"
 )
 
 // KrigingTrainArgs

@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/mocheer/pluto/ts"
-	"github.com/mocheer/pluto/ts/geois"
+	"github.com/mocheer/xena/gs"
 )
 
 // NewTileServer 根据config.xml实例化服务
@@ -41,7 +41,7 @@ func NewTileServer(confPath string) (*TileServer, error) {
 }
 
 // ReadTile 返回瓦片数据
-func (server *TileServer) ReadTile(tile geois.Tile) ([]byte, error) {
+func (server *TileServer) ReadTile(tile gs.Tile) ([]byte, error) {
 	switch server.CacheFormat {
 	case EsriMapCacheStorageModeCompactV2:
 		return server.ReadCompactTileV2(tile)
@@ -54,7 +54,7 @@ func (server *TileServer) ReadTile(tile geois.Tile) ([]byte, error) {
 }
 
 // ReadCompactTile 返回紧凑型的切片数据
-func (server *TileServer) ReadCompactTile(tile geois.Tile) ([]byte, error) {
+func (server *TileServer) ReadCompactTile(tile gs.Tile) ([]byte, error) {
 	bundlxPath, bundlePath, imgDataIndex := server.GetFileInfo(tile)
 	bundlx, err := os.Open(bundlxPath)
 	if err != nil {
@@ -80,7 +80,7 @@ func (server *TileServer) ReadCompactTile(tile geois.Tile) ([]byte, error) {
 }
 
 // ReadCompactTileV2 返回紧凑型V2的切片数据
-func (server *TileServer) ReadCompactTileV2(tile geois.Tile) ([]byte, error) {
+func (server *TileServer) ReadCompactTileV2(tile gs.Tile) ([]byte, error) {
 	_, bundlePath, _ := server.GetFileInfo(tile)
 	BundlxMaxidx := BundlxMaxidx
 
@@ -115,7 +115,7 @@ func (server *TileServer) ReadCompactTileV2(tile geois.Tile) ([]byte, error) {
 }
 
 // GetFileInfo 返回文件路径和数据索引
-func (server *TileServer) GetFileInfo(tile geois.Tile) (bundlxPath, bundlePath string, imgDataIndex int64) {
+func (server *TileServer) GetFileInfo(tile gs.Tile) (bundlxPath, bundlePath string, imgDataIndex int64) {
 	internalRow := tile.Y % server.RowsPerFile
 	internalCol := tile.X % server.ColsPerFile
 	bundleRow := tile.Y - internalRow
@@ -128,12 +128,12 @@ func (server *TileServer) GetFileInfo(tile geois.Tile) (bundlxPath, bundlePath s
 }
 
 // ReadExplodedTile 返回单张瓦片
-func (server *TileServer) ReadExplodedTile(tile geois.Tile) ([]byte, error) {
+func (server *TileServer) ReadExplodedTile(tile gs.Tile) ([]byte, error) {
 	return os.ReadFile(server.GetFilePath(tile))
 }
 
 // GetFilePath 返回图片路径
-func (server *TileServer) GetFilePath(tile geois.Tile) string {
+func (server *TileServer) GetFilePath(tile gs.Tile) string {
 	level := fmt.Sprintf("L%02d", tile.Z)
 	row := fmt.Sprintf("R%08x", tile.Y)
 	column := fmt.Sprintf("C%08x", tile.X)

@@ -12,7 +12,7 @@ import (
 // Use 初始化 dmap 路由
 func Use(api fiber.Router) {
 	router := api.Group("/dmap")
-	router.Get("/image/:id/:z", mw.NewLimiter(limiter.Config{Max: 1, Expiration: 30 * time.Second}), createImageHandle)
+	router.Get("/image/:id/:z", mw.NewLimiter(limiter.Config{Max: 8, Expiration: 10 * time.Second}), createImageHandle)
 	router.Get("/image/:id/:z/:y/:x", imageTileHandle)
 	//
 	router.Get("/layer/:id", mw.Cache, layerHandle)

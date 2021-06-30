@@ -9,6 +9,7 @@ require (
 	github.com/gofiber/jwt/v2 v2.2.3
 	github.com/gofiber/websocket/v2 v2.0.6
 	github.com/mocheer/pluto v1.0.0
+	github.com/mocheer/xena v0.0.0-00010101000000-000000000000
 	github.com/mocheer/vesta v0.0.0-00010101000000-000000000000
 	github.com/sirupsen/logrus v1.8.1
 	github.com/tdewolff/canvas v0.0.0-20210624142932-07559ac5d4f8
@@ -23,4 +24,5 @@ require (
 replace (
 	github.com/mocheer/pluto => ../pluto
 	github.com/mocheer/vesta => ../vesta
+	github.com/mocheer/xena => ../xena
 )
