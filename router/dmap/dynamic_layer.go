@@ -12,7 +12,7 @@ import (
 	"github.com/mocheer/charon/res"
 	"github.com/mocheer/pluto/fs"
 	"github.com/mocheer/pluto/jsg"
-	"github.com/mocheer/xena/gs"
+	"github.com/mocheer/xena/gm"
 )
 
 // createImageHandle
@@ -32,7 +32,7 @@ func createImageHandle(c *fiber.Ctx) error {
 	layerInfo := req.Engine().Query(args)
 	layer := layerInfo.(*tables.DmapLayer)
 	//
-	dynamicLayer := NewDynamicLayer(id, &gs.Tile{
+	dynamicLayer := NewDynamicLayer(id, &gm.Tile{
 		Z: z,
 	})
 	dynamicLayer.SetOptions(layer.Options)
@@ -88,7 +88,7 @@ func imageTileHandle(c *fiber.Ctx) error {
 	layerInfo := req.Engine().Query(args)
 	layer := layerInfo.(*tables.DmapLayer)
 	//
-	dynamicLayer := NewDynamicLayer(id, &gs.Tile{
+	dynamicLayer := NewDynamicLayer(id, &gm.Tile{
 		Z: z, Y: y, X: x,
 	})
 	dynamicLayer.SetOptions(layer.Options)

@@ -7,7 +7,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/mocheer/charon/mw"
 	"github.com/mocheer/charon/res"
-	"github.com/mocheer/xena/gs"
+	"github.com/mocheer/xena/gm"
 )
 
 // cacheServer
@@ -49,7 +49,7 @@ func getTile(c *fiber.Ctx) error {
 		x, _ := strconv.Atoi(xParam)
 		y, _ := strconv.Atoi(yParam)
 		z, _ := strconv.Atoi(zParam)
-		data, err := server.ReadTile(gs.Tile{
+		data, err := server.ReadTile(gm.Tile{
 			Z: z, Y: y, X: x,
 		})
 		if err == nil {
