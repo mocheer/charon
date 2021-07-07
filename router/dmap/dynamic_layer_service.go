@@ -242,7 +242,7 @@ func (layer *DynamicLayer) drawImage(fileName string, x float64, y float64) {
 
 // GetData 获取画布数据
 func (layer *DynamicLayer) GetData() []byte {
-	image := rasterizer.Draw(layer.canvas, 1)
+	image := rasterizer.Draw(layer.canvas, 1, canvas.DefaultColorSpace)
 	bs, _ := img.ToBytes(image, "png")
 	return bs
 }
@@ -264,7 +264,7 @@ func (layer *DynamicLayer) savingTile(imgRGBA *image.RGBA, i, j int) string {
 
 // SaveTiles 保存瓦片
 func (layer *DynamicLayer) SaveTiles() *sync.WaitGroup {
-	img := rasterizer.Draw(layer.canvas, 1)
+	img := rasterizer.Draw(layer.canvas, 1, canvas.DefaultColorSpace)
 	minTile := layer.minTile
 	maxTile := layer.maxTile
 
@@ -287,6 +287,6 @@ func (layer *DynamicLayer) SaveTiles() *sync.WaitGroup {
 
 // GetTile
 func (layer *DynamicLayer) GetTile(i, j int) string {
-	img := rasterizer.Draw(layer.canvas, 1)
+	img := rasterizer.Draw(layer.canvas, 1, canvas.DefaultColorSpace)
 	return layer.savingTile(img, i, j)
 }

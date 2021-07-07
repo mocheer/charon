@@ -11,8 +11,10 @@ import (
 
 func Use(api fiber.Router) {
 	router := api.Group("/reptile")
+	//
 	router.Get("/", reptileHandle)
 	router.Post("/", reptileHandle)
+	// 网页截图
 	router.Get("/image", repliteScreen)
 }
 

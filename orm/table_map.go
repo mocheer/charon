@@ -7,12 +7,13 @@ import (
 
 // tableMap 映射
 var TableMap = ts.Map{
-	"app":     &tables.AppConfig{},
-	"page":    &tables.PageConfig{},
-	"view":    &tables.ViewConfig{},
-	"dmap":    &tables.Dmap{},
-	"layer":   &tables.DmapLayer{},
-	"feature": &tables.DmapFeature{},
-	"dir":     &tables.FsDir{},
-	"file":    &tables.FsFile{},
+	"app":             &tables.AppConfig{},
+	"page":            &tables.PageConfig{},
+	"view":            &tables.ViewConfig{},
+	"dmap":            &tables.Dmap{},
+	"layer":           &tables.DmapLayer{},
+	"feature":         &tables.DmapFeature{},
+	"dir":             &tables.FsDir{},
+	"file":            &tables.FsFile{},
+	"spatial_ref_sys": &tables.SpatialRefSys{},
 }
