@@ -27,4 +27,6 @@ func Use(api fiber.Router) {
 	//
 	router.Get("/kriging/image", krigingImageHandle)
 	router.Post("/kriging/image", krigingImageHandle)
+	//
+	router.Post("/geo2topo", Geo2TopojsonHandle)
 }

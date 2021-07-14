@@ -1,4 +1,4 @@
-package proxies
+package agent
 
 import (
 	"github.com/gofiber/fiber/v2"

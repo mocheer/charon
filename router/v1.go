@@ -3,11 +3,11 @@ package router
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/mocheer/charon/mw"
+	"github.com/mocheer/charon/router/agent"
 	"github.com/mocheer/charon/router/arcgis"
 	"github.com/mocheer/charon/router/auth"
 	"github.com/mocheer/charon/router/dmap"
 	"github.com/mocheer/charon/router/pipal"
-	"github.com/mocheer/charon/router/proxies"
 	"github.com/mocheer/charon/router/query"
 	"github.com/mocheer/charon/router/reptile"
 	"github.com/mocheer/charon/router/upload"
@@ -22,10 +22,10 @@ func v1_init(api fiber.Router) {
 	// 在auth之后执行token认证中间件
 	mw.UseProtected(v1)
 	//
+	agent.Use(v1)
 	pipal.Use(v1)
 	query.Use(v1)
 	upload.Use(v1)
-	proxies.Use(v1)
 	arcgis.Use(v1)
 	dmap.Use(v1)
 	ws.Use(v1)

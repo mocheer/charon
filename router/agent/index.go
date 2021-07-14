@@ -1,4 +1,4 @@
-package proxies
+package agent
 
 import (
 	"github.com/gofiber/fiber/v2"
@@ -7,9 +7,12 @@ import (
 
 // Use
 func Use(api fiber.Router) {
-	router := api.Group("proxy")
+	router := api.Group("agent")
 	router.Get("/", ProxyHandle)
 	router.Post("/", ProxyHandle)
+	//
+	router.Get("/raw/*", ProxyHandle2)
+	router.Post("/raw/*", ProxyHandle2)
 	// 高德地图
 	router.Get("/amap/*", ProxyAMap)
 	// 综合气象数据
@@ -20,5 +23,10 @@ func Use(api fiber.Router) {
 func ProxyHandle(c *fiber.Ctx) error {
 	args := &ProxyArgs{}
 	req.MustParseArgs(c, args)
+	//
 	return proxyURL(c, args.URL)
+}
+
+func ProxyHandle2(c *fiber.Ctx) error {
+	return proxyURL(c, "http://"+c.Params("*")+"?"+c.Context().QueryArgs().String())
 }
