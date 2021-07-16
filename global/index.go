@@ -2,6 +2,7 @@ package global
 
 import (
 	"github.com/mocheer/charon/cts"
+	"github.com/mocheer/pluto/fn"
 	"github.com/mocheer/pluto/fs"
 )
 
@@ -33,11 +34,16 @@ func Init(mode string) {
 			Log.Info("生成配置文件失败", err)
 		}
 	}
-	// 连接数据库
-	DB, err = openDB()
-	if err != nil {
-		Log.Error("数据库连接失败", err)
-	}
+	// 当连接数据库失败的时候，等待30s重新连接，直到连接成功
+	fn.SetSleep(func() bool {
+		// 连接数据库
+		DB, err = openDB()
+		if err != nil {
+			Log.Error("数据库连接失败", err)
+			return true
+		}
+		return false
+	}, 30)
 
 	initRSA()
 	//
